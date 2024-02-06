@@ -1,0 +1,198 @@
+$vt-primary: (
+  50 : #e3eff9,
+  100 : #b8d6f0,
+  200 : #89bbe7,
+  300 : #599fdd,
+  400 : #368bd5,
+  500 : #1276ce,
+  600 : #106ec9,
+  700 : #0d63c2,
+  800 : #0a59bc,
+  900 : #0546b0,
+  A100 : #dbe6ff,
+  A200 : #a8c4ff,
+  A400 : #75a1ff,
+  A700 : #5b90ff,
+  contrast: (50 : #000000,
+    100 : #000000,
+    200 : #000000,
+    300 : #000000,
+    400 : #ffffff,
+    500 : #ffffff,
+    600 : #ffffff,
+    700 : #ffffff,
+    800 : #ffffff,
+    900 : #ffffff,
+    A100 : #000000,
+    A200 : #000000,
+    A400 : #000000,
+    A700 : #000000,
+  )
+);
+$vt-success: (
+  A100 : #dbffdb,
+  A200 : #5adf5a,
+  A400 : #00cd00,
+  contrast: (50 : #000000,
+    100 : #000000,
+    200 : #000000,
+    300 : #000000,
+    400 : #ffffff,
+    500 : #ffffff,
+    600 : #ffffff,
+    700 : #ffffff,
+    800 : #ffffff,
+    900 : #ffffff,
+    A100 : #000000,
+    A200 : #000000,
+    A400 : #000000,
+    A700 : #000000,
+  )
+);
+$vt-primary2: (
+  50 : #f4ffec,
+  100 : #e9ffd9,
+  200 : #d5fcb9,
+  300 : #c6ff9e,
+  400 : #bdff8e,
+  500 : #abf875,
+  600 : #9bf15d,
+  700 : #91ff43,
+  800 : #87ff31,
+  900 : #77ff16,
+  A100 : #dbe6ff,
+  A200 : #a8c4ff,
+  A400 : #75a1ff,
+  A700 : #5b90ff,
+  contrast: (50 : #000000,
+    100 : #000000,
+    200 : #000000,
+    300 : #000000,
+    400 : #000000,
+    500 : #000000,
+    600 : #000000,
+    700 : #000000,
+    800 : #000000,
+    900 : #000000,
+    A100 : #000000,
+    A200 : #000000,
+    A400 : #000000,
+    A700 : #000000,
+  )
+);
+
+@import '@angular/material/theming';
+
+@include mat-core();
+
+$primary: mat-palette($vt-primary);
+// $accent: mat-palette($mat-pink, A200, A100, A400);
+$accent: mat-palette($vt-success, A200, A100, A400);
+
+.theme {
+  &--light {
+    $theme: mat-light-theme($primary, $accent);
+
+    @include angular-material-theme($theme);
+
+    .text-link {
+      color: #299bff;
+      cursor: pointer;
+    }
+    .text-link:hover {
+      text-decoration: underline;
+    }
+
+    .btn-success {
+      background-color: rgb(185 255 185);
+      color: black;
+    }
+
+    .btn-danger {
+      background-color: #fb7676;
+      color: white;
+    }
+
+    .mat-cell {
+      padding: 10px;
+    }
+
+    .mat-header-cell {
+      padding: 10px;
+      font-weight: 900;
+      text-transform: capitalize;
+    }
+
+    thead {
+      background-color: aquamarine !important;
+    }
+
+    .mat-form-field-wrapper {
+      padding: 0 !important;
+    }
+
+    // fix bug underline of paginator
+    // .mat-form-field-appearance-legacy .mat-form-field-underline {
+    //   height: 0;
+    // }
+    .mat-form-field-appearance-legacy .mat-form-field-underline{
+      bottom: 0.25rem;
+    }
+
+
+  }
+
+  &--dark {
+    $theme: mat-dark-theme($primary, $accent);
+    background: #303030;
+    color: white;
+
+    @include angular-material-theme($theme);
+
+    .text-link {
+      color: #42ceff;
+      cursor: pointer;
+    }
+    .text-link:hover {
+      text-decoration: underline;
+    }
+
+    .btn-success {
+      background-color: rgb(185 255 185);
+      color: black;
+    }
+
+    .btn-danger {
+      background-color: #fb7676;
+      color: white;
+    }
+
+    .mat-cell {
+      padding: 10px;
+    }
+
+    .mat-header-cell {
+      padding: 10px;
+      font-weight: 900;
+      text-transform: capitalize;
+      color: black;
+    }
+
+    .mat-table thead {
+      background-color: rgb(127, 168, 255) !important;
+    }
+
+    .mat-form-field-wrapper {
+      padding: 0 !important;
+    }
+
+      // fix bug underline of paginator
+      // .mat-form-field-appearance-legacy .mat-form-field-underline {
+      //   height: 0;
+      // }
+      .mat-form-field-appearance-legacy .mat-form-field-underline{
+        bottom: 0.25rem;
+      }
+
+  }
+}
