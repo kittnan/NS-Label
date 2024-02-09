@@ -8,7 +8,7 @@ import * as ExcelJS from 'exceljs';
 import * as saveAs from 'file-saver'
 import * as XLSX from 'xlsx'
 import * as moment from 'moment';
-import { from, lastValueFrom } from 'rxjs';
+import { Subject, first, from, fromEvent, interval, lastValueFrom, map, of, switchMap } from 'rxjs';
 import { HttpModelService } from 'src/app/http/http-model.service';
 import Swal from 'sweetalert2';
 
@@ -21,6 +21,8 @@ export interface MODEL {
   remark3?: string,
   modelName?: string,
 }
+
+
 
 @Component({
   selector: 'app-model',
@@ -47,6 +49,9 @@ export class ModelComponent {
 
   async ngOnInit(): Promise<void> {
     try {
+
+
+
       let resData = await lastValueFrom(this.$model.get(new HttpParams()))
       let data: MODEL = {
         internalModel: 'asdasd',
@@ -104,13 +109,14 @@ export class ModelComponent {
                 await lastValueFrom(this.$model.import(sheetData))
                 location.reload()
                 Swal.fire({
-                  title:'SUCCESS',
-                  icon:'success',
-                  showConfirmButton:false,
-                  timer:1500
-                }).then(()=>location.reload())
+                  title: 'SUCCESS',
+                  icon: 'success',
+                  showConfirmButton: false,
+                  timer: 1500
+                }).then(() => location.reload())
               }
             }
+            console.log("🚀 ~ sheetData:", sheetData)
           }
         });
       this.fileUpload.nativeElement.value = ''

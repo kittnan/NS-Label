@@ -4,22 +4,28 @@
   <div fxFlex="95" fxLayout="row wrap" fxLayoutAlign="center start">
     <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start center" fxLayoutGap="10" class="mt-4">
       <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="center center" class="mb-3">
-        <mat-form-field fxFlex="100" fxFlex.gt-md="30" appearance="outline" floatLabel="always">
-          <mat-label>File Upload 117</mat-label>
+        <app-sub-title fxFlex="100" [title]="'Upload PKTA177'"></app-sub-title>
+        <mat-form-field fxFlex="100" fxFlex.gt-md="30" appearance="outline" floatLabel="always"
+          [class]="fileUploadPKTA117Class()">
+          <mat-label>File Upload 117 {{showLastPKTA117()}} </mat-label>
           <button mat-icon-button matSuffix (click)="file1.click()">
             <mat-icon>attach_file</mat-icon>
           </button>
           <input [readonly]="true" matInput type="text" (click)="file1.click()">
           <input type="file" hidden #file1 (change)="onUpload117($event)">
         </mat-form-field>
+
       </div>
       <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="center center" class="mb-3">
+        <app-sub-title fxFlex="100" [title]="'Indicate scan'" class="mt-6"></app-sub-title>
         <mat-form-field fxFlex="100" fxFlex.gt-md="30" appearance="outline" floatLabel="always" class="bg-green-300">
           <mat-label>Scan Indicate Label</mat-label>
-          <input matInput #scan (input)="onScan($event)">
+          <input matInput #scan (keydown)="onScanIndicate($event)">
           <mat-icon matSuffix>qr_code_scanner</mat-icon>
         </mat-form-field>
       </div>
+      <app-sub-title fxFlex="100" [title]="'Detail'" class="mt-6"></app-sub-title>
+
       <mat-form-field fxFlex="100" fxFlex.gt-md="30" appearance="outline" floatLabel="always">
         <mat-label>Model Name</mat-label>
         <input matInput [(ngModel)]="form.modelName">
@@ -62,22 +68,184 @@
       </mat-form-field>
       <mat-form-field fxFlex="100" fxFlex.gt-md="30" appearance="outline" floatLabel="always">
         <mat-label>Lot No.</mat-label>
-        <input matInput [(ngModel)]="form.lotNo">
+        <input matInput [(ngModel)]="form.lotShow">
       </mat-form-field>
       <mat-form-field fxFlex="100" fxFlex.gt-md="30" appearance="outline" floatLabel="always">
         <mat-label>Box No</mat-label>
         <input matInput [(ngModel)]="form.boxNo">
       </mat-form-field>
 
+      <app-sub-title fxFlex="100" [title]="'Sending Scan'" class="mt-6"></app-sub-title>
+
+
       <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="center center" class="mb-3">
-        <mat-form-field fxFlex="100" fxFlex.gt-md="30" appearance="outline" floatLabel="always" class="bg-green-300">
+        <mat-form-field fxFlex="100" fxFlex.gt-md="30" appearance="outline" floatLabel="always" class="bg-yellow-50">
           <mat-label>Scan Sending Label</mat-label>
           <input matInput id="scanSending" #scanSending (keydown)="onScanSending($event)">
           <mat-icon matSuffix>qr_code_scanner</mat-icon>
         </mat-form-field>
       </div>
-
     </div>
+
+
+    <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start start" [class]="fooClass()">
+      <div fxLayout="row wrap" fxLayoutAlign="start center" class="mr-3">
+        <label>Total</label>
+        <span>
+          {{form.qty? form.qty:0}}
+        </span>
+      </div>
+      <div fxLayout="row wrap" fxLayoutAlign="start center">
+        <label>Scan</label>
+        <span>
+          {{sumScan()}}
+        </span>
+      </div>
+    </div>
+    <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="end center">
+      <span (click)="onClickPrint()">
+        Print
+      </span>
+    </div>
+
+    <ng-container *ngFor="let item of dataSending ; let i=index">
+      <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="space-around center">
+        <div fxLayout="row wrap" fxLayoutAlign="start center">
+          <label>Lot</label>
+          <span class="text-sm">
+            {{item.lot}}
+          </span>
+        </div>
+        <div fxLayout="row wrap" fxLayoutAlign="start center">
+          <label>Box no</label>
+          <span class="text-sm">
+            {{item.cs}}
+          </span>
+        </div>
+        <div fxLayout="row wrap" fxLayoutAlign="start center">
+          <label>InternalModel</label>
+          <span class="text-sm">
+            {{item.internalModel}}
+          </span>
+        </div>
+        <div fxLayout="row wrap" fxLayoutAlign="start center">
+          <label>Sending Date</label>
+          <span class="text-sm">
+            {{item.sendingDate}}
+          </span>
+        </div>
+        <div fxLayout="row wrap" fxLayoutAlign="start center">
+          <label>Q'ty</label>
+          <span class="text-sm">
+            {{item.qty}}
+          </span>
+        </div>
+        <div fxLayout="row wrap" fxLayoutAlign="start center">
+          <label>Scan Date</label>
+          <span class="text-sm">
+            {{item.date | date:'dd/MMM/YY, hh:mm'}}
+          </span>
+        </div>
+      </div>
+    </ng-container>
+
+    <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start start" class="mt-3">
+      <!-- <div fxLayout="row wrap" fxLayoutAlign="start start"
+            style="width: 420.36px; height: 213.39px; border: 1px solid black;"> -->
+      <div fxLayout="row wrap" fxLayoutAlign="start start" id="print" *ngFor="let data of dataSending; let i=index"
+        class="mr-3" style="width: 420.36px; height: 213.39px; ">
+        <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start stretch" style="height: 110px;">
+          <div fxFlex="70" fxLayout="row wrap" fxLayoutAlign="start end" class="bb" style="padding:5px 0 10px 0">
+            <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start start" style="padding:10px 10px;">
+              <span class="f-a r95 ms-1">
+                PONo#. {{form.PO}}
+              </span>
+            </div>
+            <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start start" style="padding: 5px 10px 0 10px;">
+              <img [src]="data.barcode1" alt="" style="width: 260px; ">
+            </div>
+            <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start start" style="padding: 0 10px;">
+              <span class="f-a r9">
+                {{data.valueBarcode1}}
+              </span>
+            </div>
+          </div>
+          <div fxFlex="30" fxLayout="row wrap" fxLayoutAlign="start stretch" class="bb"
+            style="padding-top: 5px; padding-bottom: 10px;">
+            <div fxFlex="20" fxLayout="row wrap" fxLayoutAlign="end end" style="padding: 0 0 40px 0;">
+              <span class="f-a r95">
+                {{model.remark1}}
+              </span>
+            </div>
+            <div fxFlex="70" fxLayout="row wrap" fxLayoutAlign="center end">
+              <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="center start">
+                <img [src]="data.qrCode" alt="" style="width: 75px !important; height: 75px !important;">
+              </div>
+              <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="center start">
+                <span class="f-a r8 italic">
+                  {{model.remark2}}
+                </span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start start" class="bt" style="height: 110px;">
+          <div fxFlex="60" fxLayout="row wrap" fxLayoutAlign="start start" class="pl-1">
+            <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start start">
+              <span fxFlex="100" class="f-a r10 pb-1">
+                P/N: {{data.valueBarcode2}}
+              </span>
+              <img fxFlex="100" [src]="data.barcode2" alt="">
+
+            </div>
+
+          </div>
+
+          <div fxFlex="40" fxLayout="row wrap" fxLayoutAlign="end end">
+            <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start center" class="r9">
+              <span class="f-a r9 pb-1">
+                Rot Date: {{data.date}}
+              </span>
+            </div>
+            <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="center start">
+              <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="end start" style="padding:0 5px">
+                <img [src]="data.barcode3" alt="">
+              </div>
+              <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="end start" class="f-a r9" style="padding:0 15px">
+                Q:{{data.valueBarcode3}}
+              </div>
+            </div>
+          </div>
+          <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start start">
+            <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start start" class="pl-1">
+              <img [src]="data.barcode4" alt="" style="width: 310px; ">
+            </div>
+            <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start start" class="pl-1">
+              <div fxFlex="50" fxLayout="row wrap" fxLayoutAlign="start center">
+                <span fxFlex="15" class="f-a r9">
+                  LOT
+                </span>
+                <span fxFlex="85" class="f-a r9">
+                  {{data.valueBarcode4}}
+                </span>
+              </div>
+              <div fxFlex="50" fxLayout="row wrap" fxLayoutAlign="start center">
+                <span fxFlex="30" class="f-a r9">
+                </span>
+                <span fxFlex="70" class="f-a r9">
+                  {{model.unit}}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+      </div>
+    </div>
+
+
   </div>
 
 

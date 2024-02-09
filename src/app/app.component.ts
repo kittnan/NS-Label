@@ -29,13 +29,13 @@ export class AppComponent {
         {
           title: 'New',
           icon: 'person_add_alt',
-          path: 'admin/users-new',
+          path: 'user/create',
           items: []
         },
         {
           title: 'Manage',
           icon: 'manage_accounts',
-          path: 'admin/users-manage',
+          path: 'user/manage',
           items: []
         },
 
@@ -49,40 +49,13 @@ export class AppComponent {
         {
           title: 'Manage',
           icon: 'manage_accounts',
-          path: 'admin/models-manage',
+          path: 'admin/model',
           items: []
         },
 
       ]
     },
-    {
-      title: 'Defect',
-      icon: 'groups',
-      path: '',
-      items: [
-        {
-          title: 'Defect',
-          icon: 'manage_accounts',
-          path: 'admin/defect-manage',
-          items: []
-        },
 
-      ]
-    },
-    {
-      title: 'Masters',
-      icon: 'groups',
-      path: '',
-      items: [
-        {
-          title: 'masters',
-          icon: 'manage_accounts',
-          path: 'admin/masters',
-          items: []
-        },
-
-      ]
-    },
 
 
   ]

@@ -1,18 +1,32 @@
+import { HttpParams } from '@angular/common/http';
 import { Component, ElementRef, ViewChild } from '@angular/core';
+import * as JsBarcode from 'jsbarcode';
+import * as moment from 'moment';
+import * as QRCode from 'qrcode';
+import { lastValueFrom } from 'rxjs';
+import { HttpModelService } from 'src/app/http/http-model.service';
+import { HttpPkta117Service } from 'src/app/http/http-pkta117.service';
 import { ConvertTextService } from 'src/app/service/convert-text.service';
+import { GenerateLabelService } from 'src/app/service/generate-label.service';
+import Swal from 'sweetalert2';
+import { MixLotService } from './mix-lot.service';
+import { OneLotService } from './one-lot.service';
+import { ManyLotService } from './many-lot.service';
+
 export interface FORM {
-  modelName?: string,
-  shipmentDate?: Date,
-  modelCode?: string,
-  partNumber?: string,
-  PO?: string,
-  qty?: string,
-  shipPlace?: string,
-  shipTo?: string,
-  invoice?: string,
-  TTL?: string,
-  lotNo?: string,
-  BoxNo?: string,
+  modelName?: any | null,
+  shipmentDate?: Date | null,
+  modelCode?: any | null,
+  partNumber?: any | null,
+  PO?: any | null,
+  qty?: any | null,
+  shipPlace?: any | null,
+  shipTo?: any | null,
+  invoice?: any | null,
+  TTL?: any | null,
+  lotNo?: any | null,
+  lotShow?: any | null,
+  boxNo?: any | null,
 }
 @Component({
   selector: 'app-create-label',
@@ -25,9 +39,9 @@ export class CreateLabelComponent {
   @ViewChild('scan', { static: true }) scan!: ElementRef;
   @ViewChild('scanSending', { static: true }) scanSending!: ElementRef;
 
-  form = {
+  form: FORM = {
     modelName: null,
-    shipmentDate: new Date(),
+    shipmentDate: null,
     modelCode: null,
     partNumber: null,
     PO: null,
@@ -37,45 +51,198 @@ export class CreateLabelComponent {
     invoice: null,
     TTL: null,
     lotNo: null,
+    lotShow: [],
     boxNo: null,
 
   }
+  pkta117: any = null
+  models: any = null
+  dataSending: any = []
+  // manyLot: boolean = false
+  model: any
+  mode: any = null
+
   constructor(
     private $convertText: ConvertTextService,
-    private el: ElementRef
+    private $pkta117: HttpPkta117Service,
+    private $model: HttpModelService,
+    private $label: GenerateLabelService,
+    private $mixLot: MixLotService,
+    private $oneLot: OneLotService,
+    private $manyLot: ManyLotService
   ) {
 
   }
-  ngOnInit(): void {
-    //Called after the constructor, initializing input properties, and the first call to ngOnChanges.
-    //Add 'implements OnInit' to the class.
+  async ngOnInit(): Promise<void> {
+    try {
+      const resDataPKTA117 = await lastValueFrom(this.$pkta117.get(new HttpParams()))
+      this.pkta117 = resDataPKTA117
+      const resDataModel = await lastValueFrom(this.$model.get(new HttpParams()))
+      this.models = resDataModel
 
+    } catch (error) {
+      console.log("🚀 ~ error:", error)
+    }
   }
+
+  generateBarcodeDataURL(barcodeValue: any, options: any) {
+    return new Promise((resolve, reject) => {
+      try {
+        const canvas = document.createElement('canvas');
+        JsBarcode(canvas, barcodeValue, options);
+        const dataURL = canvas.toDataURL('image/png');
+        resolve(dataURL);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  };
   async onUpload117($event: any) {
     try {
       let file: any = $event.target.files as File;
       const data = await this.$convertText.continueFiles(file)
       console.log("🚀 ~ data:", data)
+      const resData = await lastValueFrom(this.$pkta117.import(data))
+      this.pkta117 = resData
+      Swal.fire({
+        title: "SUCCESS",
+        icon: 'success',
+        showConfirmButton: false,
+        timer: 1500
+      })
     } catch (error) {
       console.log("🚀 ~ error:", error)
     }
   }
-  onScan($event: any) {
-    let value = $event.target.value
-    setTimeout(() => {
-      this.scan.nativeElement.value = ''
-    }, 300);
-  }
-  onScanSending($event: any) {
-    let value = $event.target.value
+  onScanIndicate($event: any) {
     if ($event.key == 'Enter' || $event.key == 'Tab') {
-      console.log("🚀 ~ value:", this.scanSending.nativeElement.value)
+      let value = this.scan.nativeElement.value
+      value = value?.length > 0 ? value.trim() : value
+      this.scan.nativeElement.value = ''
+      this.scan.nativeElement.focus()
       setTimeout(() => {
-        this.scanSending.nativeElement.value = ''
-        let el = document.getElementById('scanSending')?.focus()
+        try {
+          let spValue = value.split(',')
+          if (spValue.length !== 6) {
+            // this.manyLot = true
+            // this.manageManyLot(value, spValue)
+            // this.scanSending.nativeElement.focus()
+            const { form, model }: any = this.$manyLot.many(spValue, this.models, this.pkta117)
+            if (!form || !model) throw ''
+            this.form = form
+            this.model = model
+            this.scanSending.nativeElement.focus()
+            this.mode = 'many'
+
+          } else if (spValue[4] != 'MIX LOT') {
+            const { form, model }: any = this.$oneLot.one(spValue, this.models, this.pkta117)
+            if (!form || !model) throw ''
+            this.form = form
+            this.model = model
+            this.scanSending.nativeElement.focus()
+            this.mode = 'one'
+
+            // console.log('normal');
+            // this.manyLot = false
+            // this.manageNormalLotAndMixLot(value, spValue)
+            // this.scanSending.nativeElement.focus()
+          } else {
+            const { form, model }: any = this.$mixLot.mix(spValue, this.models, this.pkta117)
+            if (!form || !model) throw ''
+            this.form = form
+            this.model = model
+            this.scanSending.nativeElement.focus()
+            this.mode = 'mix'
+
+          }
+        } catch (error) {
+          console.log("🚀 ~ error:", error)
+        }
+        // let dataFound = this.pkta117.find((item:any)=>item['Cust PO#']==value)
       }, 300);
     }
+  }
 
+
+
+  async onScanSending($event: any) {
+    try {
+      if ($event.key == 'Enter' || $event.key == 'Tab') {
+        let value = this.scanSending.nativeElement.value
+        value = value?.length > 0 ? value.trim() : value
+        console.log("🚀 ~ value:", value)
+        // this.scanSending.nativeElement.value = ''
+        // this.scanSending.nativeElement.focus()
+
+        // if (this.manyLot) {
+        //   this.createDataSendingManyLot(value)
+        // } else {
+        //   this.createDataSendingNormalLotAndMixLot(value)
+        // }
+
+        if (this.mode == 'many') {
+          this.dataSending = await this.$manyLot.manySend(value, this.form, this.model, this.dataSending)
+          console.log("🚀 ~ this.dataSending:", this.dataSending)
+          this.scanSending.nativeElement.value = ''
+          this.scanSending.nativeElement.focus()
+        }
+        if (this.mode == 'one') {
+          this.dataSending = await this.$oneLot.oneSend(value, this.form, this.model, this.dataSending)
+          console.log("🚀 ~ this.dataSending:", this.dataSending)
+          this.scanSending.nativeElement.value = ''
+          this.scanSending.nativeElement.focus()
+        }
+        if (this.mode == 'mix') {
+          this.dataSending = await this.$mixLot.mixSend(value, this.form, this.model, this.dataSending)
+          console.log("🚀 ~ this.dataSending:", this.dataSending)
+          this.scanSending.nativeElement.value = ''
+          this.scanSending.nativeElement.focus()
+        }
+
+
+      }
+    } catch (error) {
+      console.log("🚀 ~ error:", error)
+
+    }
 
   }
+
+
+  // todo summary total qty scan
+  sumScan() {
+    return this.dataSending.reduce((p: any, n: any) => {
+      return p += Number(n.qty)
+    }, 0)
+  }
+
+  // todo class
+  fooClass() {
+    if (!this.form.qty) return 'bg-red-400'
+    if (this.sumScan() != Number(this.form.qty)) return 'bg-red-400'
+    return 'bg-green-300'
+  }
+
+  // todo status upload pkta117
+  fileUploadPKTA117Class() {
+    if (this.pkta117 && this.pkta117.length > 0) {
+      return 'bg-green-300'
+    }
+    return 'bg-red-400'
+  }
+
+  // todo show lasted upload pkta117
+  showLastPKTA117() {
+    if (this.pkta117 && this.pkta117.length > 0) {
+      return moment(this.pkta117[0].createdAt).format('DD-MMM-YYYY, HH:mm')
+    }
+    return 'not have pkta117'
+  }
+
+
+  // todo print
+  onClickPrint() {
+    this.$label.generatePDF('foo')
+  }
 }
+
