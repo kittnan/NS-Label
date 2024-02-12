@@ -131,7 +131,9 @@ export class CreateLabelComponent {
             if (!form || !model) throw ''
             this.form = form
             this.model = model
-            this.scanSending.nativeElement.focus()
+            setTimeout(() => {
+              this.scanSending.nativeElement.focus()
+            }, 100);
             this.mode = 'many'
 
           } else if (spValue[4] != 'MIX LOT') {
@@ -139,7 +141,9 @@ export class CreateLabelComponent {
             if (!form || !model) throw ''
             this.form = form
             this.model = model
-            this.scanSending.nativeElement.focus()
+            setTimeout(() => {
+              this.scanSending.nativeElement.focus()
+            }, 100);
             this.mode = 'one'
 
             // console.log('normal');
@@ -151,7 +155,9 @@ export class CreateLabelComponent {
             if (!form || !model) throw ''
             this.form = form
             this.model = model
-            this.scanSending.nativeElement.focus()
+            setTimeout(() => {
+              this.scanSending.nativeElement.focus()
+            }, 100);
             this.mode = 'mix'
 
           }
@@ -159,7 +165,7 @@ export class CreateLabelComponent {
           console.log("🚀 ~ error:", error)
         }
         // let dataFound = this.pkta117.find((item:any)=>item['Cust PO#']==value)
-      }, 300);
+      }, 100);
     }
   }
 
@@ -184,19 +190,27 @@ export class CreateLabelComponent {
           this.dataSending = await this.$manyLot.manySend(value, this.form, this.model, this.dataSending)
           console.log("🚀 ~ this.dataSending:", this.dataSending)
           this.scanSending.nativeElement.value = ''
-          this.scanSending.nativeElement.focus()
+          setTimeout(() => {
+            this.scanSending.nativeElement.focus()
+          }, 100);
         }
         if (this.mode == 'one') {
           this.dataSending = await this.$oneLot.oneSend(value, this.form, this.model, this.dataSending)
           console.log("🚀 ~ this.dataSending:", this.dataSending)
           this.scanSending.nativeElement.value = ''
-          this.scanSending.nativeElement.focus()
+          setTimeout(() => {
+            this.scanSending.nativeElement.focus()
+          }, 100);
+
         }
         if (this.mode == 'mix') {
           this.dataSending = await this.$mixLot.mixSend(value, this.form, this.model, this.dataSending)
           console.log("🚀 ~ this.dataSending:", this.dataSending)
           this.scanSending.nativeElement.value = ''
-          this.scanSending.nativeElement.focus()
+          setTimeout(() => {
+            this.scanSending.nativeElement.focus()
+          }, 100);
+
         }
 
 
@@ -220,13 +234,13 @@ export class CreateLabelComponent {
   fooClass() {
     if (!this.form.qty) return 'bg-red-400'
     if (this.sumScan() != Number(this.form.qty)) return 'bg-red-400'
-    return 'bg-green-300'
+    return 'bg-green-100'
   }
 
   // todo status upload pkta117
   fileUploadPKTA117Class() {
     if (this.pkta117 && this.pkta117.length > 0) {
-      return 'bg-green-300'
+      return 'bg-green-100'
     }
     return 'bg-red-400'
   }

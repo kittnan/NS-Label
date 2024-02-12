@@ -2,12 +2,14 @@ import { ChangeDetectorRef, Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { LocalStoreService } from './service/local-store.service';
 import { MediaMatcher } from '@angular/cdk/layout';
+import { NgxUiLoaderService } from 'ngx-ui-loader';
 
 interface SideItem {
   title: string,
   icon: string,
   path: string,
-  items: SideItem[]
+  items: SideItem[],
+  role: any
 }
 @Component({
   selector: 'app-root',
@@ -23,34 +25,54 @@ export class AppComponent {
   fillerNav: SideItem[] = [
     {
       title: 'Users',
-      icon: 'groups',
+      icon: 'multiple-users-silhouette.png',
       path: '',
+      role: [
+        'admin'
+      ],
       items: [
-        {
-          title: 'New',
-          icon: 'person_add_alt',
-          path: 'user/create',
-          items: []
-        },
+
         {
           title: 'Manage',
-          icon: 'manage_accounts',
-          path: 'user/manage',
-          items: []
+          icon: 'user-avatar.png',
+          path: 'admin/user-manage',
+          items: [],
+          role: [''],
+
         },
 
       ]
     },
     {
       title: 'Model',
-      icon: 'groups',
+      icon: 'model.png',
       path: '',
+      role: ['admin'],
       items: [
         {
           title: 'Manage',
-          icon: 'manage_accounts',
+          icon: 'project-management.png',
           path: 'admin/model',
-          items: []
+          items: [],
+          role: [''],
+
+        },
+
+      ]
+    },
+    {
+      title: 'Label',
+      icon: 'price-tag.png',
+      path: '',
+      role: ['admin', 'user'],
+      items: [
+        {
+          title: 'Create Label',
+          icon: 'warranty.png',
+          path: 'user/create',
+          items: [],
+          role: [''],
+
         },
 
       ]
@@ -63,16 +85,20 @@ export class AppComponent {
   login: boolean = false
   private _mobileQueryListener: () => void;
 
-  constructor(changeDetectorRef: ChangeDetectorRef, media: MediaMatcher,
+  constructor(
+    changeDetectorRef: ChangeDetectorRef,
+    media: MediaMatcher,
     private router: Router,
-    private $local: LocalStoreService) {
+    private $local: LocalStoreService,
+    private $loader: NgxUiLoaderService
+  ) {
     this.mobileQuery = media.matchMedia('(max-width: 600px)');
     this._mobileQueryListener = () => changeDetectorRef.detectChanges();
     this.mobileQuery.addListener(this._mobileQueryListener);
   }
 
   ngOnInit(): void {
-    if (localStorage.getItem('NS-Label_access')) {
+    if (this.$local.getProfile()) {
       this.login = true
     } else {
       this.login = false
@@ -85,13 +111,16 @@ export class AppComponent {
     this.mobileQuery.removeListener(this._mobileQueryListener);
   }
   onLogout() {
+    this.$loader.start()
     this.$local.removeAllLocalStore()
-    this.router.navigate(['/login']).then(() => location.reload())
+    setTimeout(() => {
+      this.router.navigate(['/login']).then(() => location.reload())
+    }, 300);
   }
 
-  // todo show user login nane
+  // todo show user login name
   displayName() {
-    let userLogin: any = localStorage.getItem('RGAS_user')
+    let userLogin: any = this.$local.getProfile()
     userLogin = userLogin ? JSON.parse(userLogin) : null
     if (userLogin) {
       let firstName = userLogin.firstName ? userLogin.firstName : ''
@@ -99,5 +128,17 @@ export class AppComponent {
       return `${firstName}-${lastName}`
     }
     return ''
+  }
+
+  // todo show role login
+  displayRole(){
+    return `(${this.$local.getRole()})`
+  }
+
+  // todo check role login
+  checkRole(role: any) {
+    let roleLogin: any = this.$local.getRole()
+    if (role.some((r: string) => r == roleLogin)) return true
+    return false
   }
 }

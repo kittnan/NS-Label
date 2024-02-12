@@ -1,65 +1,39 @@
-
-import { HttpParams } from '@angular/common/http';
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
+import { HttpUserService } from 'src/app/http/http-user.service';
 import * as ExcelJS from 'exceljs';
 import * as saveAs from 'file-saver'
 import * as XLSX from 'xlsx'
-import * as moment from 'moment';
-import { Subject, first, from, fromEvent, interval, lastValueFrom, map, of, switchMap } from 'rxjs';
-import { HttpModelService } from 'src/app/http/http-model.service';
+import { HttpParams } from '@angular/common/http';
+import { lastValueFrom } from 'rxjs';
 import Swal from 'sweetalert2';
-
-export interface MODEL {
-  internalModel?: string,
-  partName?: string,
-  type?: string,
-  remark1?: string,
-  remark2?: string,
-  remark3?: string,
-  modelName?: string,
-}
-
-
-
 @Component({
-  selector: 'app-model',
-  templateUrl: './model.component.html',
-  styleUrls: ['./model.component.scss']
+  selector: 'app-users-manage',
+  templateUrl: './users-manage.component.html',
+  styleUrls: ['./users-manage.component.scss']
 })
-export class ModelComponent {
+export class UsersManageComponent {
 
   // todo table
-  displayedColumns: string[] = ['internalModel', 'partName', 'type', 'remark1', 'remark2', 'remark3', 'modelName'];
+  displayedColumns: string[] = ['employeeCode', 'firstName', 'lastName', 'role'];
   dataSource!: MatTableDataSource<any>
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
-
 
   // todo element files control
   @ViewChild('fileUpload', { static: true }) fileUpload!: ElementRef;
 
   constructor(
-    private $model: HttpModelService
+    private $user: HttpUserService
   ) {
 
   }
 
   async ngOnInit(): Promise<void> {
     try {
-
-      let resData = await lastValueFrom(this.$model.get(new HttpParams()))
-      let data: MODEL = {
-        internalModel: 'asdasd',
-        partName: "asdasd",
-        type: 'mass',
-        remark1: '1',
-        remark2: '11',
-        remark3: '123',
-        modelName: '12313'
-      }
+      let resData = await lastValueFrom(this.$user.get(new HttpParams()))
       this.dataSource = new MatTableDataSource(resData)
       setTimeout(() => {
         this.dataSource.sort = this.sort
@@ -73,8 +47,6 @@ export class ModelComponent {
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
     this.dataSource.filter = filterValue.trim().toLowerCase();
-    console.log("🚀 ~ this.dataSource:", this.dataSource)
-
     if (this.dataSource.paginator) {
       this.dataSource.paginator.firstPage();
     }
@@ -98,13 +70,18 @@ export class ModelComponent {
               const rowData: any = {};
               row.eachCell((cell: any, colNumber: any) => {
                 const key = header[colNumber]
-                rowData[key] = cell.value;
+                if (key == 'role') {
+                  rowData[key] = rowData[key] && rowData[key].length >= 0 ? rowData[key] : []
+                  rowData[key] = [...rowData[key], cell.value]
+                } else {
+                  rowData[key] = cell.value;
+                }
               });
               sheetData.push(rowData);
               let lrNum: any = ws.lastRow?.number
               let lcNum: any = ws.lastColumn?.number
               if (lrNum && lrNum == rowNumber) {
-                await lastValueFrom(this.$model.import(sheetData))
+                await lastValueFrom(this.$user.import(sheetData))
                 location.reload()
                 Swal.fire({
                   title: 'SUCCESS',
@@ -114,7 +91,6 @@ export class ModelComponent {
                 }).then(() => location.reload())
               }
             }
-            console.log("🚀 ~ sheetData:", sheetData)
           }
         });
       this.fileUpload.nativeElement.value = ''
@@ -126,7 +102,7 @@ export class ModelComponent {
 
   async onDownload() {
     try {
-      let resData: any = await lastValueFrom(this.$model.get(new HttpParams()))
+      let resData: any = await lastValueFrom(this.$user.get(new HttpParams()))
       resData = resData.map((item: any) => {
         delete item._id
         delete item.createdAt
@@ -134,17 +110,22 @@ export class ModelComponent {
         return item
       })
 
-      const workbook = XLSX.utils.book_new();
-      const worksheet = XLSX.utils.json_to_sheet(resData);
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet 1');
-      const excelBuffer: any = XLSX.write(workbook, {
-        bookType: 'xlsx',
-        type: 'array',
+      const wb: any = new ExcelJS.Workbook()
+      const ws = wb.addWorksheet('My Sheet');
+      ws.addRow(['employeeCode', 'firstName', 'lastName', 'role', 'role', 'role'])
+      let dataSheet = resData.map((item: any) => {
+        return [
+          item.employeeCode,
+          item.firstName,
+          item.lastName,
+          ...item.role
+        ]
+      })
+      ws.addRows(dataSheet)
+      wb.xlsx.writeBuffer().then((buffer: any) => {
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        saveAs(blob, `userMaster.xlsx`);
       });
-      const EXCEL_TYPE =
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8';
-      const blob: Blob = new Blob([excelBuffer], { type: EXCEL_TYPE });      // Save the Blob as an Excel file using file-saver
-      saveAs(blob, 'model.xlsx');
     } catch (error) {
       console.log("🚀 ~ error:", error)
     }

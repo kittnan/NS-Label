@@ -21,4 +21,33 @@ export class LocalStoreService {
       }
     }
   }
+  getToken(): string | null {
+    return localStorage.getItem('NS-Label_access_token')
+  }
+  getRefreshToken(): string | null {
+    return localStorage.getItem('NS-Label_refresh_token')
+  }
+  setToken(value: string) {
+    localStorage.setItem('NS-Label_access_token', value)
+  }
+  setRefreshToken(value: string) {
+    localStorage.setItem('NS-Label_refresh_token', value)
+  }
+
+  getProfile(): string | null {
+    return localStorage.getItem('NS-Label_profile')
+  }
+  setProfile(value: string) {
+    localStorage.setItem('NS-Label_profile', value)
+  }
+
+  getRole(): string | null {
+    return localStorage.getItem('NS-Label_role')
+  }
+  setRole(value: string) {
+    localStorage.setItem('NS-Label_role', value)
+  }
+
+
+
 }

@@ -82,8 +82,12 @@
         <mat-form-field fxFlex="100" fxFlex.gt-md="30" appearance="outline" floatLabel="always" class="bg-yellow-50">
           <mat-label>Scan Sending Label</mat-label>
           <input matInput id="scanSending" #scanSending (keydown)="onScanSending($event)">
-          <mat-icon matSuffix>qr_code_scanner</mat-icon>
         </mat-form-field>
+        <button mat-raised-button class="ml-3">
+          <div fxLayout="row wrap" fxLayoutAlign="center center">
+            <mat-icon matSuffix>qr_code_scanner</mat-icon>
+          </div>
+        </button>
       </div>
     </div>
 
@@ -101,12 +105,19 @@
           {{sumScan()}}
         </span>
       </div>
+      <div fxFlex="auto"></div>
+      <div fxLayout="row wrap" fxLayoutAlign="end center" class="pr-4">
+        <button  mat-button (click)="onClickPrint()">
+          <div fxLayout="row wrap" fxLayoutAlign="center center">
+            <img src="./assets/icons/pdf.png" alt="" style="width: 25px; height: 25px;" >
+            <span>
+              Print
+            </span>
+          </div>
+        </button>
+      </div>
     </div>
-    <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="end center">
-      <span (click)="onClickPrint()">
-        Print
-      </span>
-    </div>
+
 
     <ng-container *ngFor="let item of dataSending ; let i=index">
       <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="space-around center">

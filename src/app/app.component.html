@@ -4,7 +4,8 @@
     <h1 class="example-app-name">{{title}}</h1>
     <div class="flex-auto"></div>
 
-    <button (click)="onLogout()">
+    <span></span>
+    <button class="mr-4">
       <div class="flex justify-around items-center gap-1">
         <mat-icon class="mat-18">
           contact_mail
@@ -12,6 +13,16 @@
         <span class="text-sm capitalize">
           {{displayName()}}
         </span>
+        <span class="text-sm capitalize">
+          {{displayRole()}}
+        </span>
+      </div>
+    </button>
+    <button (click)="onLogout()" title="sign out">
+      <div fxLayout="row wrap" fxLayoutAlign="center center">
+        <mat-icon class="mat-18">
+          logout
+        </mat-icon>
       </div>
     </button>
 
@@ -21,27 +32,28 @@
     <mat-sidenav #snav [mode]="mobileQuery.matches ? 'over' : 'side'" [fixedInViewport]="mobileQuery.matches"
       fixedTopGap="56" [opened]="true">
       <mat-nav-list>
-        <div *ngFor="let nav of fillerNav; let i=index" class="block p-4" style="max-width: 17rem;">
-          <div class="flex justify-start items-center gap-2">
-            <mat-icon class="mat-18">
-              {{nav.icon}}
-            </mat-icon>
-            <span class="uppercase font-black">
-              {{nav.title}}
-            </span>
-          </div>
-          <a mat-list-item [routerLink]="item.path" *ngFor="let item of nav.items" class="capitalize">
-            <div class="flex justify-start items-center gap-1">
-              <mat-icon class="mat-18">
-                {{item.icon}}
-              </mat-icon>
-              <span class="capitalize font-medium">
-                {{item.title}}
+        <ng-container *ngFor="let nav of fillerNav; let i=index">
+          <div *ngIf="checkRole(nav.role)" class="block p-4" style="max-width: 17rem;">
+            <div class="flex justify-start items-center gap-2">
+              <img [src]="'./assets/icons/'+nav.icon" alt="" style="width: 25px ; height: 25px;">
+              <span class="uppercase font-black">
+                {{nav.title}}
               </span>
             </div>
-          </a>
-          <mat-divider class="w-full"></mat-divider>
-        </div>
+            <a mat-list-item [routerLink]="item.path" *ngFor="let item of nav.items" class="capitalize">
+              <div class="flex justify-start items-center gap-1">
+                <img [src]="'./assets/icons/'+item.icon" alt="" style="width: 25px ; height: 25px;">
+
+                <span class="capitalize font-medium">
+                  {{item.title}}
+                </span>
+              </div>
+            </a>
+            <mat-divider class="w-full"></mat-divider>
+          </div>
+        </ng-container>
+
+
       </mat-nav-list>
     </mat-sidenav>
 

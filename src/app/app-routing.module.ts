@@ -5,6 +5,8 @@ import { AdminModule } from './pages/admin/admin.module';
 import { UserModule } from './pages/user/user.module';
 import { GuestModule } from './pages/guest/guest.module';
 import { NotfoundComponent } from './pages/notfound/notfound.component';
+import { adminGuard } from './guards/admin.guard';
+import { userGuard } from './guards/user.guard';
 
 const routes: Routes = [
   {
@@ -19,12 +21,13 @@ const routes: Routes = [
   {
     path: 'admin',
     loadChildren: () => AdminModule,
-    canActivate: [],
+    canActivate: [adminGuard],
   },
   {
     path: 'user',
     loadChildren: () => UserModule,
-    canActivate: [],
+    canActivate: [userGuard],
+
   },
   {
     path: 'guest',
