@@ -9,12 +9,14 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MaterialModule } from 'src/app/material/material.module';
 import { SharedModule } from 'src/app/shared/shared.module';
+import { PrintLabelComponent } from './print-label/print-label.component';
 
 
 @NgModule({
   declarations: [
     UserComponent,
-    CreateLabelComponent
+    CreateLabelComponent,
+    PrintLabelComponent
   ],
   imports: [
     CommonModule,

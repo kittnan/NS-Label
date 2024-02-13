@@ -67,9 +67,17 @@ export class AppComponent {
       role: ['admin', 'user'],
       items: [
         {
-          title: 'Create Label',
+          title: 'Create',
           icon: 'warranty.png',
           path: 'user/create',
+          items: [],
+          role: [''],
+
+        },
+        {
+          title: 'Print',
+          icon: 'printer.png',
+          path: 'user/print',
           items: [],
           role: [''],
 
