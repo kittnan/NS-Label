@@ -10,13 +10,15 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MaterialModule } from 'src/app/material/material.module';
 import { SharedModule } from 'src/app/shared/shared.module';
 import { PrintLabelComponent } from './print-label/print-label.component';
+import { PrintPreviewComponent } from './print-preview/print-preview.component';
 
 
 @NgModule({
   declarations: [
     UserComponent,
     CreateLabelComponent,
-    PrintLabelComponent
+    PrintLabelComponent,
+    PrintPreviewComponent
   ],
   imports: [
     CommonModule,

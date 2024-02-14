@@ -1,0 +1,107 @@
+<app-title [title]="'Print Label'"></app-title>
+<div fxLayout="row wrap" fxLayoutAlign="center start">
+
+  <div *ngIf="items" fxFlex="95" fxLayout="row wrap" fxLayoutAlign="center start">
+    <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start center" class="mt-4">
+      <button mat-raised-button (click)="onPrint()">
+        <div fxLayoutAlign="center center" class="flex gap-2">
+          <img src="./assets/icons/pdf.png" alt="" style="width: 25px; height: 25px;">
+          Print
+        </div>
+      </button>
+    </div>
+    <div fxFlex="50" fxLayout="row wrap" fxLayoutAlign="start start" class="p-4" *ngFor="let row of items; let i=index">
+      <div fxLayout="row wrap" fxLayoutAlign="start start" id="print" style="width: 420.36px; height: 213.39px; ">
+        <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start stretch" style="height: 110px;">
+          <div fxFlex="70" fxLayout="row wrap" fxLayoutAlign="start end" class="bb" style="padding:5px 0 10px 0">
+            <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start start" style="padding:10px 10px;">
+              <span class="f-a r95 ms-1">
+                PONo#. {{row.PO}}
+              </span>
+            </div>
+            <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start start" style="padding: 5px 10px 0 10px;">
+              <img [src]="row.barcode1" alt="" style="width: 260px; ">
+            </div>
+            <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start start" style="padding: 0 10px;">
+              <span class="f-a r9">
+                {{row.valueBarcode1}}
+              </span>
+            </div>
+          </div>
+          <div fxFlex="30" fxLayout="row wrap" fxLayoutAlign="start stretch" class="bb"
+            style="padding-top: 5px; padding-bottom: 10px;">
+            <div fxFlex="20" fxLayout="row wrap" fxLayoutAlign="end end" style="padding: 0 0 40px 0;">
+              <span class="f-a r95">
+                {{row.remark1}}
+              </span>
+            </div>
+            <div fxFlex="70" fxLayout="row wrap" fxLayoutAlign="center end">
+              <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="center start">
+                <img [src]="row.qrCode" alt="" style="width: 75px !important; height: 75px !important;">
+              </div>
+              <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="center start">
+                <span class="f-a r8 italic">
+                  {{row.remark2}}
+                </span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start start" class="bt" style="height: 110px;">
+          <div fxFlex="60" fxLayout="row wrap" fxLayoutAlign="start start" class="pl-1">
+            <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start start">
+              <span fxFlex="100" class="f-a r10 pb-1">
+                P/N: {{row.valueBarcode2}}
+              </span>
+              <img fxFlex="100" [src]="row.barcode2" alt="">
+
+            </div>
+
+          </div>
+
+          <div fxFlex="40" fxLayout="row wrap" fxLayoutAlign="end end">
+            <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start center" class="r9">
+              <span class="f-a r9 pb-1">
+                Rot Date: {{row.date}}
+              </span>
+            </div>
+            <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="center start">
+              <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="end start" style="padding:0 5px">
+                <img [src]="row.barcode3" alt="">
+              </div>
+              <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="end start" class="f-a r9" style="padding:0 15px">
+                Q:{{row.valueBarcode3}}
+              </div>
+            </div>
+          </div>
+          <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start start">
+            <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start start" class="pl-1">
+              <img [src]="row.barcode4" alt="" style="width: 310px; ">
+            </div>
+            <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start start" class="pl-1">
+              <div fxFlex="50" fxLayout="row wrap" fxLayoutAlign="start center">
+                <span fxFlex="15" class="f-a r9">
+                  LOT
+                </span>
+                <span fxFlex="85" class="f-a r9">
+                  {{row.valueBarcode4}}
+                </span>
+              </div>
+              <div fxFlex="50" fxLayout="row wrap" fxLayoutAlign="start center">
+                <span fxFlex="30" class="f-a r9">
+                </span>
+                <span fxFlex="70" class="f-a r9">
+                  {{row.unit}}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+      </div>
+    </div>
+
+  </div>
+</div>

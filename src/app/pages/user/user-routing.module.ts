@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { CreateLabelComponent } from './create-label/create-label.component';
 import { PrintLabelComponent } from './print-label/print-label.component';
+import { PrintPreviewComponent } from './print-preview/print-preview.component';
 
 const routes: Routes = [
   {
@@ -16,6 +17,10 @@ const routes: Routes = [
   {
     path: 'print',
     component: PrintLabelComponent,
+  },
+  {
+    path: 'print-preview',
+    component: PrintPreviewComponent,
   },
 
 ];

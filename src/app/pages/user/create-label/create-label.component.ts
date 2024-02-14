@@ -12,6 +12,8 @@ import Swal from 'sweetalert2';
 import { MixLotService } from './mix-lot.service';
 import { OneLotService } from './one-lot.service';
 import { ManyLotService } from './many-lot.service';
+import { HttpFormService } from 'src/app/http/http-form.service';
+import { HttpSendingService } from 'src/app/http/http-sending.service';
 
 export interface FORM {
   modelName?: any | null,
@@ -39,7 +41,7 @@ export class CreateLabelComponent {
   @ViewChild('scan', { static: true }) scan!: ElementRef;
   @ViewChild('scanSending', { static: true }) scanSending!: ElementRef;
 
-  form: FORM = {
+  form: any = {
     modelName: null,
     shipmentDate: null,
     modelCode: null,
@@ -69,7 +71,9 @@ export class CreateLabelComponent {
     private $label: GenerateLabelService,
     private $mixLot: MixLotService,
     private $oneLot: OneLotService,
-    private $manyLot: ManyLotService
+    private $manyLot: ManyLotService,
+    private $form: HttpFormService,
+    private $sending: HttpSendingService
   ) {
 
   }
@@ -231,9 +235,9 @@ export class CreateLabelComponent {
   }
 
   // todo class
-  fooClass() {
-    if (!this.form.qty) return 'bg-red-400'
-    if (this.sumScan() != Number(this.form.qty)) return 'bg-red-400'
+  scanBarClass() {
+    if (!this.form.qty) return 'bg-red-300'
+    if (this.sumScan() != Number(this.form.qty)) return 'bg-red-300'
     return 'bg-green-100'
   }
 
@@ -257,6 +261,39 @@ export class CreateLabelComponent {
   // todo print
   onClickPrint() {
     this.$label.generatePDF('foo')
+  }
+
+  // todo submit
+  async onSubmit() {
+    try {
+      console.log(this.form);
+      console.log(this.dataSending);
+      const newData = {
+        ...this.form,
+        model: this.model,
+        mode: this.mode,
+      }
+      const { runNo } = await lastValueFrom(this.$form.runNo())
+      console.log("🚀 ~ runNo:", runNo)
+      newData['runNo'] = runNo
+      await lastValueFrom(this.$form.create(newData))
+      await lastValueFrom(this.$sending.create(this.dataSending.map((item: any) => {
+        return {
+          ...item,
+          runNo: runNo,
+          printNo: 0,
+          printHistory:null
+        }
+      })))
+      Swal.fire({
+        title: 'Success',
+        icon: 'success',
+        showConfirmButton: false,
+        timer: 1500
+      }).then(() => location.reload())
+    } catch (error) {
+      console.log("🚀 ~ error:", error)
+    }
   }
 }
 

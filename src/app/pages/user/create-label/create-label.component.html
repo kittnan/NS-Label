@@ -1,4 +1,4 @@
-<app-title [title]="'Create'"></app-title>
+<app-title [title]="'Create Label'"></app-title>
 <div fxLayout="row wrap" fxLayoutAlign="center start">
 
   <div fxFlex="95" fxLayout="row wrap" fxLayoutAlign="center start">
@@ -83,33 +83,53 @@
           <mat-label>Scan Sending Label</mat-label>
           <input matInput id="scanSending" #scanSending (keydown)="onScanSending($event)">
         </mat-form-field>
-        <button mat-raised-button class="ml-3">
+        <button  class="ml-3">
           <div fxLayout="row wrap" fxLayoutAlign="center center">
             <mat-icon matSuffix>qr_code_scanner</mat-icon>
+          </div>
+        </button>
+        <button mat-raised-button color="accent" class="ml-3" (click)="onSubmit()">
+          <div fxLayout="row wrap" fxLayoutAlign="center center" fxLayoutGap="5">
+            <mat-icon class="mat-18">
+              done_all
+            </mat-icon>
+            <span>
+              Create
+            </span>
           </div>
         </button>
       </div>
     </div>
 
 
-    <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start start" [class]="fooClass()">
-      <div fxLayout="row wrap" fxLayoutAlign="start center" class="mr-3">
+    <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start stretch" class="rounded-md p-2" [class]="scanBarClass()">
+      <div fxLayout="row wrap" fxLayoutAlign="center center" class="mr-3">
         <label>Total</label>
         <span>
           {{form.qty? form.qty:0}}
         </span>
       </div>
-      <div fxLayout="row wrap" fxLayoutAlign="start center">
+      <div fxLayout="row wrap" fxLayoutAlign="center center">
         <label>Scan</label>
         <span>
           {{sumScan()}}
         </span>
       </div>
+      <button mat-button class="ml-16">
+        <div fxLayout="row wrap" fxLayoutAlign="center center" fxLayoutGap="5">
+          <mat-icon class="mat-18">
+            restart_alt
+          </mat-icon>
+          <span>
+            Reset
+          </span>
+        </div>
+      </button>
       <div fxFlex="auto"></div>
       <div fxLayout="row wrap" fxLayoutAlign="end center" class="pr-4">
-        <button  mat-button (click)="onClickPrint()">
+        <button mat-button (click)="onClickPrint()">
           <div fxLayout="row wrap" fxLayoutAlign="center center">
-            <img src="./assets/icons/pdf.png" alt="" style="width: 25px; height: 25px;" >
+            <img src="./assets/icons/pdf.png" alt="" style="width: 25px; height: 25px;">
             <span>
               Print
             </span>
@@ -255,6 +275,7 @@
 
       </div>
     </div>
+
 
 
   </div>

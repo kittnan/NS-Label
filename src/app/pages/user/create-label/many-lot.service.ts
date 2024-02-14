@@ -113,7 +113,13 @@ export class ManyLotService {
           valueBarcode3: valueBarcode3.toString().padStart(6, '0'),
           valueBarcode4: valueBarcode4,
           qrCode: qrCode,
-          date: moment(resultScan.sendingDate).format('DDMMYY')
+          date: moment(resultScan.sendingDate).format('DDMMYY'),
+          remark1: model.remark1,
+          remark2: model.remark2,
+          remark3: model.remark3,
+          remark4: model.remark4,
+          unit: model.unit,
+          runNo: this.dataSending.length+1
         })
         return this.dataSending
 
