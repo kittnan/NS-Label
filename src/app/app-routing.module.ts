@@ -7,6 +7,7 @@ import { GuestModule } from './pages/guest/guest.module';
 import { NotfoundComponent } from './pages/notfound/notfound.component';
 import { adminGuard } from './guards/admin.guard';
 import { userGuard } from './guards/user.guard';
+import { SelectDepartmentComponent } from './pages/select-department/select-department.component';
 
 const routes: Routes = [
   {
@@ -17,6 +18,10 @@ const routes: Routes = [
   {
     path: 'login',
     component: LoginComponent
+  },
+  {
+    path: 'select-department',
+    component: SelectDepartmentComponent
   },
   {
     path: 'admin',

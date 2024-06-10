@@ -1,11 +1,13 @@
 import { Injectable } from '@angular/core';
 import * as moment from 'moment';
-import { QrCodeAndBarcodeService } from './qr-code-and-barcode.service';
 import * as QRCode from 'qrcode';
+import { QrCodeAndBarcodeService } from '../create-label/qr-code-and-barcode.service';
 @Injectable({
   providedIn: 'root'
 })
-export class MixLotService {
+export class OneLot2Service {
+
+
   private model: any
   private form: any
   private dataSending: any
@@ -13,7 +15,7 @@ export class MixLotService {
     private $qrCodeAndBarcode: QrCodeAndBarcodeService
   ) { }
 
-  mix(spValue: any[], models: any, pkta117: any) {
+  one(spValue: any[], models: any, pkta117: any) {
     try {
       const resultScan = {
         modelName: spValue[0],
@@ -23,7 +25,6 @@ export class MixLotService {
         lot: this.cutAndTrim(spValue[4]),
         PO: spValue[5]
       }
-      // console.log("🚀 ~ resultScan:", resultScan)
       // const dataFoundInPKTA117 = pkta117.find((item: any) => item['Cust PO#'] == resultScan.PO)
       // if (!dataFoundInPKTA117) throw 'not found in pkta117'
       const dataFoundAtModel = models.find((model: any) => model['modelName'] == resultScan.modelName)
@@ -33,7 +34,7 @@ export class MixLotService {
         modelCode: dataFoundAtModel.internalModel,
         modelName: dataFoundAtModel.modelName,
         partNumber: dataFoundAtModel.partName,
-        PO: null,
+        PO: dataFoundAtModel.po,
         qty: resultScan.qty,
         boxNo: resultScan.cs,
         lotNo: resultScan.lot,
@@ -51,15 +52,20 @@ export class MixLotService {
 
   // todo cut and trim string
   private cutAndTrim(value: string) {
+    const vTrim = value.trim()
+    const vSplit = vTrim.split('-')
+    const vLot = vSplit[0].trim()
+    const vQtyPack = vSplit[1]
+    const vQty = vQtyPack.replace('PCS', '').trim()
+    const vQtyNum = Number(vQty)
     return [{
-      lot: value,
-      qty: 0,
+      lot: vLot,
+      qty: vQtyNum,
       status: false
     }]
   }
 
-
-  async mixSend(value: any, form: any, model: any, dataSending: any) {
+  async oneSend(value: any, form: any, model: any, dataSending: any) {
     try {
       this.form = form
       this.model = model
@@ -73,9 +79,12 @@ export class MixLotService {
         qty: spValue[4],
         date: new Date()
       }
+
       // todo check model
       if (!this.form.lotNo) throw 'Not found lot'
       if (resultScan.internalModel != this.form.modelCode) throw 'Model not correct'
+      const lotTargetIndex: any = this.form.lotNo.findIndex((item: any) => item.lot == resultScan.lot)
+      if (lotTargetIndex == -1) throw 'Lot not correct'
       // todo sum next qty
       let nextQty: number = this.sumScan() + Number(resultScan.qty)
       // todo check total qty and next qty not over total qty
@@ -110,16 +119,18 @@ export class MixLotService {
           remark3: model.remark3,
           remark4: model.remark4,
           unit: model.unit,
-          runNo: this.dataSending.length+1
+          runNo: this.dataSending.length + 1
 
         })
         return this.dataSending
+
       }
     } catch (error) {
       console.log("🚀 ~ error:", error)
       return null
     }
   }
+
   // todo summary total qty scan
   private sumScan() {
     return this.dataSending.reduce((p: any, n: any) => {

@@ -16,6 +16,9 @@
         <span class="text-sm capitalize">
           {{displayRole()}}
         </span>
+        <span class="text-sm capitalize">
+          {{displayDepartment()}}
+        </span>
       </div>
     </button>
     <button (click)="onLogout()" title="sign out">
@@ -33,7 +36,7 @@
       fixedTopGap="56" [opened]="true">
       <mat-nav-list>
         <ng-container *ngFor="let nav of fillerNav; let i=index">
-          <div *ngIf="checkRole(nav.role)" class="block p-4" style="max-width: 17rem;">
+          <div *ngIf="checkRole(nav.role,nav.department)" class="block p-4" style="max-width: 17rem;">
             <div class="flex justify-start items-center gap-2">
               <img [src]="'./assets/icons/'+nav.icon" alt="" style="width: 25px ; height: 25px;">
               <span class="uppercase font-black">

@@ -32,7 +32,7 @@ export interface MODEL {
 export class ModelComponent {
 
   // todo table
-  displayedColumns: string[] = ['internalModel', 'partName', 'type', 'remark1', 'remark2', 'remark3', 'modelName'];
+  displayedColumns: string[] = ['internalModel', 'partName', 'type', 'remark1', 'remark2', 'remark3', 'modelName','po'];
   dataSource!: MatTableDataSource<any>
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -87,7 +87,7 @@ export class ModelComponent {
       const sheetData: any = [];
       let header: any = []
       if (ws)
-        ws.eachRow(async (row: ExcelJS.Row, rowNumber: number) => {
+        ws.eachRow({ includeEmpty: true },async (row: ExcelJS.Row, rowNumber: number) => {
           if (rowNumber === 1) {
             header = row.values
             header.filter((item: any) => item)

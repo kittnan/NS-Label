@@ -37,7 +37,6 @@ export class LoginComponent {
   onSubmit() {
     try {
       const { username, password }: any = this.loginForm.value;
-      console.log(this.loginForm.value);
       // this.router.navigate(['/admin']).then(() => location.reload())
       this.onLogin(username, password)
     } catch (error) {
@@ -76,10 +75,12 @@ export class LoginComponent {
     this.$local.setRole(role)
     switch (role) {
       case 'admin':
-        this.router.navigate(['admin']).then(() => location.reload())
+        this.router.navigate(['select-department']).then(() => location.reload())
+        // this.router.navigate(['admin']).then(() => location.reload())
         break;
       case 'user':
-        this.router.navigate(['user']).then(() => location.reload())
+        this.router.navigate(['select-department']).then(() => location.reload())
+        // this.router.navigate(['user']).then(() => location.reload())
         break;
       case 'logout':
         this.$local.removeAllLocalStore()

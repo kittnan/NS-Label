@@ -9,7 +9,8 @@ interface SideItem {
   icon: string,
   path: string,
   items: SideItem[],
-  role: any
+  role: any,
+  department: any,
 }
 @Component({
   selector: 'app-root',
@@ -30,6 +31,8 @@ export class AppComponent {
       role: [
         'admin'
       ],
+      department: [],
+
       items: [
 
         {
@@ -38,7 +41,7 @@ export class AppComponent {
           path: 'admin/user-manage',
           items: [],
           role: [''],
-
+          department: []
         },
 
       ]
@@ -48,13 +51,16 @@ export class AppComponent {
       icon: 'model.png',
       path: '',
       role: ['admin'],
+      department: [],
+
       items: [
         {
           title: 'Manage',
           icon: 'project-management.png',
           path: 'admin/model',
           items: [],
-          role: [''],
+          role: [],
+          department: []
 
         },
 
@@ -65,13 +71,17 @@ export class AppComponent {
       icon: 'price-tag.png',
       path: '',
       role: ['admin', 'user'],
+      department: ['PE'],
+
       items: [
         {
           title: 'Create',
           icon: 'warranty.png',
-          path: 'user/create',
+          path: 'user/create-pe',
           items: [],
-          role: [''],
+          role: [],
+          department: [],
+
 
         },
         {
@@ -79,7 +89,41 @@ export class AppComponent {
           icon: 'printer.png',
           path: 'user/print',
           items: [],
-          role: [''],
+          role: [],
+          department: [],
+
+
+        },
+
+      ]
+    },
+    {
+      title: 'Label',
+      icon: 'price-tag.png',
+      path: '',
+      role: ['admin', 'user'],
+      department: ['FGWH'],
+
+      items: [
+
+        {
+          title: 'Create',
+          icon: 'warranty.png',
+          path: 'user/create-fgwh',
+          items: [],
+          role: [],
+          department: [],
+
+
+        },
+        {
+          title: 'Print',
+          icon: 'printer.png',
+          path: 'user/print',
+          items: [],
+          role: [],
+          department: [],
+
 
         },
 
@@ -106,7 +150,7 @@ export class AppComponent {
   }
 
   ngOnInit(): void {
-    if (this.$local.getProfile()) {
+    if (this.$local.getProfile() && this.$local.getDepartment()) {
       this.login = true
     } else {
       this.login = false
@@ -123,7 +167,7 @@ export class AppComponent {
     this.$local.removeAllLocalStore()
     setTimeout(() => {
       this.router.navigate(['/login']).then(() => location.reload())
-    }, 300);
+    }, 1000);
   }
 
   // todo show user login name
@@ -139,14 +183,35 @@ export class AppComponent {
   }
 
   // todo show role login
-  displayRole(){
+  displayRole() {
     return `(${this.$local.getRole()})`
+  }
+  // todo show role login
+  displayDepartment() {
+    return `(${this.$local.getDepartment()})`
   }
 
   // todo check role login
-  checkRole(role: any) {
+  checkRole(role: any, department: any) {
     let roleLogin: any = this.$local.getRole()
-    if (role.some((r: string) => r == roleLogin)) return true
+    let departmentLogin: any = this.$local.getDepartment()
+
+
+    if (role?.length === 0 && department?.length == 0) {
+      return true
+    }
+
+    if (role?.length > 0) {
+      if (role.some((r: any) => r == roleLogin) && department?.length == 0) {
+        return true
+      }
+      if (role.some((r: any) => r == roleLogin) && department?.length > 0) {
+        if (department.some((d: any) => d == departmentLogin)){
+          return true
+        }
+      }
+      }
     return false
+
   }
 }

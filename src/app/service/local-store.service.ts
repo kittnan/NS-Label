@@ -13,13 +13,11 @@ export class LocalStoreService {
     localStorage.removeItem(key)
   }
   removeAllLocalStore() {
-    let len = localStorage.length
-    for (let i = 0; i < len; i++) {
-      let key = localStorage.key(i)
-      if (key?.includes("NS-Label")) {
-        localStorage.removeItem(key)
-      }
-    }
+    localStorage.removeItem('NS-Label_access_token')
+    localStorage.removeItem('NS-Label_refresh_token')
+    localStorage.removeItem('NS-Label_profile')
+    localStorage.removeItem('NS-Label-department')
+    localStorage.removeItem('NS-Label_role')
   }
   getToken(): string | null {
     return localStorage.getItem('NS-Label_access_token')
@@ -39,6 +37,12 @@ export class LocalStoreService {
   }
   setProfile(value: string) {
     localStorage.setItem('NS-Label_profile', value)
+  }
+  getDepartment(): string | null {
+    return localStorage.getItem('NS-Label-department')
+  }
+  setDepartment(value: string) {
+    localStorage.setItem('NS-Label-department', value)
   }
 
   getRole(): string | null {

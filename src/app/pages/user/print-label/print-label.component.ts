@@ -123,7 +123,7 @@ export class PrintLabelComponent {
     this.$sending.printTable(params).pipe(map((items: any) => {
       return items.map((item: any) => {
         item.form = item.forms[0]
-        item.PO = item.form.PO
+        console.log("🚀 ~ item.form:", item.form)
         item.PO = item.form.PO
         item.boxNo = item.cs
         item.modelCode = item.form.modelCode

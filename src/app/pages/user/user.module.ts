@@ -11,6 +11,7 @@ import { MaterialModule } from 'src/app/material/material.module';
 import { SharedModule } from 'src/app/shared/shared.module';
 import { PrintLabelComponent } from './print-label/print-label.component';
 import { PrintPreviewComponent } from './print-preview/print-preview.component';
+import { CreateLabelFgwhComponent } from './create-label-fgwh/create-label-fgwh.component';
 
 
 @NgModule({
@@ -18,7 +19,8 @@ import { PrintPreviewComponent } from './print-preview/print-preview.component';
     UserComponent,
     CreateLabelComponent,
     PrintLabelComponent,
-    PrintPreviewComponent
+    PrintPreviewComponent,
+    CreateLabelFgwhComponent
   ],
   imports: [
     CommonModule,

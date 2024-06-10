@@ -64,7 +64,8 @@ export class PrintPreviewComponent {
           printHistory: item.printHistory ? [...item.printHistory, fullName] : [fullName],
         }
       })))
-      this.$label.generatePDF('foo')
+      let name: any = new Date().getTime()
+      this.$label.generatePDF(name)
     } catch (error) {
       console.log("🚀 ~ error:", error)
     }

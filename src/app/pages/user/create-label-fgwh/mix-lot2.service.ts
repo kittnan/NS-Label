@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import * as moment from 'moment';
-import { QrCodeAndBarcodeService } from './qr-code-and-barcode.service';
 import * as QRCode from 'qrcode';
+import { QrCodeAndBarcodeService } from '../create-label/qr-code-and-barcode.service';
 @Injectable({
   providedIn: 'root'
 })
-export class MixLotService {
+export class MixLot2Service {
+
   private model: any
   private form: any
   private dataSending: any
@@ -33,7 +34,7 @@ export class MixLotService {
         modelCode: dataFoundAtModel.internalModel,
         modelName: dataFoundAtModel.modelName,
         partNumber: dataFoundAtModel.partName,
-        PO: null,
+        PO: dataFoundAtModel.po,
         qty: resultScan.qty,
         boxNo: resultScan.cs,
         lotNo: resultScan.lot,
@@ -110,7 +111,7 @@ export class MixLotService {
           remark3: model.remark3,
           remark4: model.remark4,
           unit: model.unit,
-          runNo: this.dataSending.length+1
+          runNo: this.dataSending.length + 1
 
         })
         return this.dataSending

@@ -61,7 +61,7 @@ export class UsersManageComponent {
       const sheetData: any = [];
       let header: any = []
       if (ws)
-        ws.eachRow(async (row: ExcelJS.Row, rowNumber: number) => {
+        ws.eachRow({ includeEmpty: true },async (row: ExcelJS.Row, rowNumber: number) => {
           if (rowNumber === 1) {
             header = row.values
             header.filter((item: any) => item)
@@ -70,7 +70,7 @@ export class UsersManageComponent {
               const rowData: any = {};
               row.eachCell((cell: any, colNumber: any) => {
                 const key = header[colNumber]
-                if (key == 'role') {
+                if (key == 'role' || key == 'department') {
                   rowData[key] = rowData[key] && rowData[key].length >= 0 ? rowData[key] : []
                   rowData[key] = [...rowData[key], cell.value]
                 } else {
@@ -82,7 +82,6 @@ export class UsersManageComponent {
               let lcNum: any = ws.lastColumn?.number
               if (lrNum && lrNum == rowNumber) {
                 await lastValueFrom(this.$user.import(sheetData))
-                location.reload()
                 Swal.fire({
                   title: 'SUCCESS',
                   icon: 'success',

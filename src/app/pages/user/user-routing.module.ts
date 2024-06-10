@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { CreateLabelComponent } from './create-label/create-label.component';
 import { PrintLabelComponent } from './print-label/print-label.component';
 import { PrintPreviewComponent } from './print-preview/print-preview.component';
+import { CreateLabelFgwhComponent } from './create-label-fgwh/create-label-fgwh.component';
 
 const routes: Routes = [
   {
@@ -11,8 +12,12 @@ const routes: Routes = [
     pathMatch: 'full',
   },
   {
-    path: 'create',
+    path: 'create-pe',
     component: CreateLabelComponent,
+  },
+  {
+    path: 'create-fgwh',
+    component: CreateLabelFgwhComponent,
   },
   {
     path: 'print',

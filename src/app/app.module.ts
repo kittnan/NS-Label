@@ -23,6 +23,7 @@ import {
 import { MaterialModule } from './material/material.module';
 import { NotfoundComponent } from './pages/notfound/notfound.component';
 import { JwtInterceptor } from './auth/jwt.interceptor';
+import { SelectDepartmentComponent } from './pages/select-department/select-department.component';
 
 export const MY_FORMATS = {
   parse: {
@@ -52,6 +53,7 @@ const ngxUiLoaderConfig: NgxUiLoaderConfig = {
     AppComponent,
     LoginComponent,
     NotfoundComponent,
+    SelectDepartmentComponent,
   ],
   imports: [
     BrowserModule,

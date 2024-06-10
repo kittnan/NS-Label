@@ -1,11 +1,13 @@
 import { Injectable } from '@angular/core';
 import * as moment from 'moment';
-import { QrCodeAndBarcodeService } from './qr-code-and-barcode.service';
 import * as QRCode from 'qrcode';
+import { QrCodeAndBarcodeService } from '../create-label/qr-code-and-barcode.service';
 @Injectable({
   providedIn: 'root'
 })
-export class MixLotService {
+export class ManyLot2Service {
+
+
   private model: any
   private form: any
   private dataSending: any
@@ -13,17 +15,19 @@ export class MixLotService {
     private $qrCodeAndBarcode: QrCodeAndBarcodeService
   ) { }
 
-  mix(spValue: any[], models: any, pkta117: any) {
+  many(spValue: any[], models: any, pkta117: any) {
     try {
-      const resultScan = {
-        modelName: spValue[0],
-        qty: spValue[1],
-        cs: spValue[2],
-        packingDate: spValue[3],
-        lot: this.cutAndTrim(spValue[4]),
-        PO: spValue[5]
+      let topArr = spValue.splice(0, 4)
+      let tailArr = spValue.splice(spValue.length - 1, 1)
+      let lotArr = spValue
+      const resultScan: any = {
+        modelName: topArr[0],
+        qty: topArr[1],
+        cs: topArr[2],
+        packingDate: topArr[3],
+        lot: lotArr.map((item: any) => this.cutAndTrim(item)),
+        PO: tailArr[0]
       }
-      // console.log("🚀 ~ resultScan:", resultScan)
       // const dataFoundInPKTA117 = pkta117.find((item: any) => item['Cust PO#'] == resultScan.PO)
       // if (!dataFoundInPKTA117) throw 'not found in pkta117'
       const dataFoundAtModel = models.find((model: any) => model['modelName'] == resultScan.modelName)
@@ -33,7 +37,7 @@ export class MixLotService {
         modelCode: dataFoundAtModel.internalModel,
         modelName: dataFoundAtModel.modelName,
         partNumber: dataFoundAtModel.partName,
-        PO: null,
+        PO: dataFoundAtModel.po,
         qty: resultScan.qty,
         boxNo: resultScan.cs,
         lotNo: resultScan.lot,
@@ -43,6 +47,7 @@ export class MixLotService {
         form: this.form,
         model: this.model
       }
+
     } catch (error) {
       console.log("🚀 ~ error:", error)
       return null
@@ -51,15 +56,20 @@ export class MixLotService {
 
   // todo cut and trim string
   private cutAndTrim(value: string) {
-    return [{
-      lot: value,
-      qty: 0,
+    const vTrim = value.trim()
+    const vSplit = vTrim.split('-')
+    const vLot = vSplit[0].trim()
+    const vQtyPack = vSplit[1]
+    const vQty = vQtyPack.replace('PCS', '').trim()
+    const vQtyNum = Number(vQty)
+    return {
+      lot: vLot,
+      qty: vQtyNum,
       status: false
-    }]
+    }
   }
 
-
-  async mixSend(value: any, form: any, model: any, dataSending: any) {
+  async manySend(value: any, form: any, model: any, dataSending: any) {
     try {
       this.form = form
       this.model = model
@@ -73,16 +83,16 @@ export class MixLotService {
         qty: spValue[4],
         date: new Date()
       }
-      // todo check model
       if (!this.form.lotNo) throw 'Not found lot'
       if (resultScan.internalModel != this.form.modelCode) throw 'Model not correct'
+      const lotTargetIndex: any = this.form.lotNo.findIndex((item: any) => item.lot == resultScan.lot)
+      if (lotTargetIndex == -1) throw 'Lot not correct'
       // todo sum next qty
       let nextQty: number = this.sumScan() + Number(resultScan.qty)
       // todo check total qty and next qty not over total qty
       if (nextQty <= Number(this.form.qty)) {
         // todo add new result scan in data sending
         const valueBarcode1 = `A${moment().format('YYYY')}0${resultScan.cs}`
-        const valueBarcode1_1 = `${moment().format('YYYY')}0${resultScan.cs}`
         const valueBarcode2 = this.model.remark4
         const valueBarcode3 = resultScan.qty
         const valueBarcode4 = `000000${resultScan.lot}`
@@ -92,7 +102,6 @@ export class MixLotService {
         const barcode4 = await this.$qrCodeAndBarcode.genBarcode4(valueBarcode4)
         let valueQrCode = `<[!3S${this.form.PO}!P${this.model.remark4}!Q${valueBarcode3.toString().padStart(6, '0')}!1T${valueBarcode4}!D${moment(resultScan.sendingDate).format('DDMMYY')}!S${valueBarcode1}!`
         const qrCode = await QRCode.toDataURL(valueQrCode)
-        console.log("🚀 ~ valueQrCode:", valueQrCode)
         this.dataSending.push({
           ...resultScan,
           barcode1: barcode1,
@@ -111,15 +120,19 @@ export class MixLotService {
           remark4: model.remark4,
           unit: model.unit,
           runNo: this.dataSending.length+1
-
         })
         return this.dataSending
+
       }
     } catch (error) {
       console.log("🚀 ~ error:", error)
       return null
+
     }
+
+
   }
+
   // todo summary total qty scan
   private sumScan() {
     return this.dataSending.reduce((p: any, n: any) => {

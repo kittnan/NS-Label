@@ -9,33 +9,18 @@ import { HttpPkta117Service } from 'src/app/http/http-pkta117.service';
 import { ConvertTextService } from 'src/app/service/convert-text.service';
 import { GenerateLabelService } from 'src/app/service/generate-label.service';
 import Swal from 'sweetalert2';
-import { MixLotService } from './mix-lot.service';
-import { OneLotService } from './one-lot.service';
-import { ManyLotService } from './many-lot.service';
 import { HttpFormService } from 'src/app/http/http-form.service';
 import { HttpSendingService } from 'src/app/http/http-sending.service';
+import { ManyLot2Service } from './many-lot2.service';
+import { MixLot2Service } from './mix-lot2.service';
+import { OneLot2Service } from './one-lot2.service';
 
-export interface FORM {
-  modelName?: any | null,
-  shipmentDate?: Date | null,
-  modelCode?: any | null,
-  partNumber?: any | null,
-  PO?: any | null,
-  qty?: any | null,
-  shipPlace?: any | null,
-  shipTo?: any | null,
-  invoice?: any | null,
-  TTL?: any | null,
-  lotNo?: any | null,
-  lotShow?: any | null,
-  boxNo?: any | null,
-}
 @Component({
-  selector: 'app-create-label',
-  templateUrl: './create-label.component.html',
-  styleUrls: ['./create-label.component.scss']
+  selector: 'app-create-label-fgwh',
+  templateUrl: './create-label-fgwh.component.html',
+  styleUrls: ['./create-label-fgwh.component.scss']
 })
-export class CreateLabelComponent {
+export class CreateLabelFgwhComponent {
 
   // todo element files control
   @ViewChild('scan', { static: true }) scan!: ElementRef;
@@ -69,9 +54,9 @@ export class CreateLabelComponent {
     private $pkta117: HttpPkta117Service,
     private $model: HttpModelService,
     private $label: GenerateLabelService,
-    private $mixLot: MixLotService,
-    private $oneLot: OneLotService,
-    private $manyLot: ManyLotService,
+    private $mixLot: MixLot2Service,
+    private $oneLot: OneLot2Service,
+    private $manyLot: ManyLot2Service,
     private $form: HttpFormService,
     private $sending: HttpSendingService
   ) {
@@ -105,6 +90,7 @@ export class CreateLabelComponent {
     try {
       let file: any = $event.target.files as File;
       const data = await this.$convertText.continueFiles(file)
+      console.log("🚀 ~ data:", data)
       const resData = await lastValueFrom(this.$pkta117.import(data))
       this.pkta117 = resData
       Swal.fire({
@@ -179,9 +165,19 @@ export class CreateLabelComponent {
       if ($event.key == 'Enter' || $event.key == 'Tab') {
         let value = this.scanSending.nativeElement.value
         value = value?.length > 0 ? value.trim() : value
+        console.log("🚀 ~ value:", value)
+        // this.scanSending.nativeElement.value = ''
+        // this.scanSending.nativeElement.focus()
+
+        // if (this.manyLot) {
+        //   this.createDataSendingManyLot(value)
+        // } else {
+        //   this.createDataSendingNormalLotAndMixLot(value)
+        // }
 
         if (this.mode == 'many') {
           this.dataSending = await this.$manyLot.manySend(value, this.form, this.model, this.dataSending)
+          console.log("🚀 ~ this.dataSending:", this.dataSending)
           this.scanSending.nativeElement.value = ''
           setTimeout(() => {
             this.scanSending.nativeElement.focus()
@@ -189,6 +185,7 @@ export class CreateLabelComponent {
         }
         if (this.mode == 'one') {
           this.dataSending = await this.$oneLot.oneSend(value, this.form, this.model, this.dataSending)
+          console.log("🚀 ~ this.dataSending:", this.dataSending)
           this.scanSending.nativeElement.value = ''
           setTimeout(() => {
             this.scanSending.nativeElement.focus()
@@ -197,12 +194,15 @@ export class CreateLabelComponent {
         }
         if (this.mode == 'mix') {
           this.dataSending = await this.$mixLot.mixSend(value, this.form, this.model, this.dataSending)
+          console.log("🚀 ~ this.dataSending:", this.dataSending)
           this.scanSending.nativeElement.value = ''
           setTimeout(() => {
             this.scanSending.nativeElement.focus()
           }, 100);
 
         }
+
+
       }
     } catch (error) {
       console.log("🚀 ~ error:", error)
@@ -245,19 +245,21 @@ export class CreateLabelComponent {
 
   // todo print
   onClickPrint() {
-    let name: any = new Date().getTime()
-    this.$label.generatePDF(name)
+    this.$label.generatePDF('foo')
   }
 
   // todo submit
   async onSubmit() {
     try {
+      console.log(this.form);
+      console.log(this.dataSending);
       const newData = {
         ...this.form,
         model: this.model,
         mode: this.mode,
       }
       const { runNo } = await lastValueFrom(this.$form.runNo())
+      console.log("🚀 ~ runNo:", runNo)
       newData['runNo'] = runNo
       await lastValueFrom(this.$form.create(newData))
       await lastValueFrom(this.$sending.create(this.dataSending.map((item: any) => {
@@ -278,16 +280,4 @@ export class CreateLabelComponent {
       console.log("🚀 ~ error:", error)
     }
   }
-
-  onChangePO() {
-    this.dataSending = this.dataSending.map((data: any) => {
-      data.PO = this.form.PO
-      return data
-    })
-  }
-
-  onReset() {
-    this.dataSending = []
-  }
 }
-

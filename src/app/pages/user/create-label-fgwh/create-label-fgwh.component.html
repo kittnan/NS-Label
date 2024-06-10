@@ -44,7 +44,7 @@
       </mat-form-field>
       <mat-form-field fxFlex="100" fxFlex.gt-md="30" appearance="outline" floatLabel="always">
         <mat-label>PO </mat-label>
-        <input matInput [(ngModel)]="form.PO" (blur)="onChangePO()" >
+        <input matInput [(ngModel)]="form.PO">
       </mat-form-field>
       <mat-form-field fxFlex="100" fxFlex.gt-md="30" appearance="outline" floatLabel="always">
         <mat-label>Q'ty</mat-label>
@@ -83,7 +83,7 @@
           <mat-label>Scan Sending Label</mat-label>
           <input matInput id="scanSending" #scanSending (keydown)="onScanSending($event)">
         </mat-form-field>
-        <button class="ml-3">
+        <button  class="ml-3">
           <div fxLayout="row wrap" fxLayoutAlign="center center">
             <mat-icon matSuffix>qr_code_scanner</mat-icon>
           </div>
@@ -115,7 +115,7 @@
           {{sumScan()}}
         </span>
       </div>
-      <button mat-button class="ml-16" (click)="onReset()" >
+      <button mat-button class="ml-16">
         <div fxLayout="row wrap" fxLayoutAlign="center center" fxLayoutGap="5">
           <mat-icon class="mat-18">
             restart_alt

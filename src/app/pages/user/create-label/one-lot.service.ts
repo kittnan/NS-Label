@@ -24,8 +24,8 @@ export class OneLotService {
         lot: this.cutAndTrim(spValue[4]),
         PO: spValue[5]
       }
-      const dataFoundInPKTA117 = pkta117.find((item: any) => item['Cust PO#'] == resultScan.PO)
-      if (!dataFoundInPKTA117) throw 'not found in pkta117'
+      // const dataFoundInPKTA117 = pkta117.find((item: any) => item['Cust PO#'] == resultScan.PO)
+      // if (!dataFoundInPKTA117) throw 'not found in pkta117'
       const dataFoundAtModel = models.find((model: any) => model['modelName'] == resultScan.modelName)
       if (!dataFoundAtModel) throw 'not found model'
       this.model = dataFoundAtModel
@@ -33,7 +33,7 @@ export class OneLotService {
         modelCode: dataFoundAtModel.internalModel,
         modelName: dataFoundAtModel.modelName,
         partNumber: dataFoundAtModel.partName,
-        PO: resultScan.PO,
+        PO: null,
         qty: resultScan.qty,
         boxNo: resultScan.cs,
         lotNo: resultScan.lot,
@@ -118,7 +118,7 @@ export class OneLotService {
           remark3: model.remark3,
           remark4: model.remark4,
           unit: model.unit,
-          runNo: this.dataSending.length+1
+          runNo: this.dataSending.length + 1
 
         })
         return this.dataSending
