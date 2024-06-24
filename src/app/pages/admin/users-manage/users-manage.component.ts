@@ -17,7 +17,7 @@ import Swal from 'sweetalert2';
 export class UsersManageComponent {
 
   // todo table
-  displayedColumns: string[] = ['employeeCode', 'firstName', 'lastName', 'role'];
+  displayedColumns: string[] = ['employeeCode', 'firstName', 'lastName', 'role', 'department'];
   dataSource!: MatTableDataSource<any>
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -61,7 +61,7 @@ export class UsersManageComponent {
       const sheetData: any = [];
       let header: any = []
       if (ws)
-        ws.eachRow({ includeEmpty: true },async (row: ExcelJS.Row, rowNumber: number) => {
+        ws.eachRow({ includeEmpty: true }, async (row: ExcelJS.Row, rowNumber: number) => {
           if (rowNumber === 1) {
             header = row.values
             header.filter((item: any) => item)
@@ -72,12 +72,13 @@ export class UsersManageComponent {
                 const key = header[colNumber]
                 if (key == 'role' || key == 'department') {
                   rowData[key] = rowData[key] && rowData[key].length >= 0 ? rowData[key] : []
-                  rowData[key] = [...rowData[key], cell.value]
+                  rowData[key] = [...rowData[key], this.convertToText(cell)]
                 } else {
-                  rowData[key] = cell.value;
+                  rowData[key] = this.convertToText(cell)
                 }
               });
               sheetData.push(rowData);
+
               let lrNum: any = ws.lastRow?.number
               let lcNum: any = ws.lastColumn?.number
               if (lrNum && lrNum == rowNumber) {
@@ -99,6 +100,14 @@ export class UsersManageComponent {
     }
   }
 
+  convertToText(cell: any) {
+
+    if (typeof cell.value == 'object') {
+      return cell.value?.text
+    }
+    return cell.value
+  }
+
   async onDownload() {
     try {
       let resData: any = await lastValueFrom(this.$user.get(new HttpParams()))
@@ -111,13 +120,17 @@ export class UsersManageComponent {
 
       const wb: any = new ExcelJS.Workbook()
       const ws = wb.addWorksheet('My Sheet');
-      ws.addRow(['employeeCode', 'firstName', 'lastName', 'role', 'role', 'role'])
+      ws.addRow(['employeeCode', 'firstName', 'lastName', 'role', 'role', 'role', 'department', 'department'])
       let dataSheet = resData.map((item: any) => {
         return [
           item.employeeCode,
           item.firstName,
           item.lastName,
-          ...item.role
+          item.role[0],
+          item.role[1],
+          item.role[2],
+          item.department[0],
+          item.department[1],
         ]
       })
       ws.addRows(dataSheet)

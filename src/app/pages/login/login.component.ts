@@ -46,8 +46,8 @@ export class LoginComponent {
   async onLogin(username: any, password: any) {
     try {
       const auth: any = await lastValueFrom(this.http.post(`${environment.API}/auth/login-SSO`, {
-        name: username,
-        pass: password
+        name: username.trim().toUpperCase(),
+        pass: password.trim().toUpperCase()
       }))
       if (auth) {
         this.$local.setToken(auth.access_token)
