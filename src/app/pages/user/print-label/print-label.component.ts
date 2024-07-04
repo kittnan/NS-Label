@@ -5,6 +5,7 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
+import * as moment from 'moment';
 import { map } from 'rxjs';
 import { HttpFormService } from 'src/app/http/http-form.service';
 import { HttpSendingService } from 'src/app/http/http-sending.service';
@@ -17,7 +18,7 @@ import { HttpSendingService } from 'src/app/http/http-sending.service';
 export class PrintLabelComponent {
 
   // todo table
-  displayedColumns: string[] = ['select', 'PO', 'boxNo', 'lot', 'modelCode', 'modelName', 'qty', 'printNo', 'printHistory'];
+  displayedColumns: string[] = ['select', 'PO', 'box', 'lot', 'internalCode', 'qty', 'printHistory'];
   dataSource!: MatTableDataSource<any>
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -122,14 +123,8 @@ export class PrintLabelComponent {
     params = params.set('end', JSON.stringify(this.range_value.end))
     this.$sending.printTable(params).pipe(map((items: any) => {
       return items.map((item: any) => {
-        item.form = item.forms[0]
-        item.PO = item.form.PO
-        item.boxNo = item.cs
-        item.modelCode = item.form.modelCode
-        item.modelName = item.form.modelName
-        item.printNo = item.printNo
-        item.printHistory = item.printHistory ? item.printHistory[item.printHistory.length - 1] : null
-        delete item.forms
+        item.shipping = item.shippings[0]
+        item.printHistory = item.printHistory ? item.printHistory : []
         return item
       })
     })).subscribe((data: any) => {
@@ -143,5 +138,15 @@ export class PrintLabelComponent {
         console.log('err', err);
       }))
 
+  }
+
+  showPrintHistory(printHistory: any) {
+    if (printHistory?.length > 0) {
+      let last = printHistory[printHistory.length - 1]
+      if (last) {
+        return `${printHistory.length} 🖨️ ${last?.user?.firstName} - ${last?.user?.lastName}, ${moment(last.date).format('DD-MMM-YY, HH:mm')}`
+      }
+    }
+    return ''
   }
 }

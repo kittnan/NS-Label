@@ -9,7 +9,7 @@
       </mat-form-field>
       <mat-form-field appearance="outline" floatLabel="always" [ngClass.gt-md]="'pe-4'">
         <mat-label>Date</mat-label>
-        <mat-date-range-input [rangePicker]="range_dp" >
+        <mat-date-range-input [rangePicker]="range_dp">
           <input matStartDate placeholder="Start date" [(ngModel)]="range_value.start">
           <input matEndDate placeholder="End date" [(ngModel)]="range_value.end">
         </mat-date-range-input>
@@ -17,7 +17,7 @@
         <mat-datepicker-toggle matIconSuffix [for]="range_dp"></mat-datepicker-toggle>
         <mat-date-range-picker #range_dp></mat-date-range-picker>
       </mat-form-field>
-      <button mat-raised-button (click)="onSubmit()" >
+      <button mat-raised-button (click)="onSubmit()">
         <div fxLayout="row wrap" fxLayoutAlign="center center">
           <mat-icon class="mat-18">search</mat-icon>
           <span>
@@ -58,9 +58,9 @@
             <td mat-cell *matCellDef="let row"> {{row.PO}} </td>
           </ng-container>
 
-          <ng-container matColumnDef="boxNo">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header> boxNo </th>
-            <td mat-cell *matCellDef="let row"> {{row.boxNo}} </td>
+          <ng-container matColumnDef="box">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> box </th>
+            <td mat-cell *matCellDef="let row"> {{row.box}} </td>
           </ng-container>
 
           <ng-container matColumnDef="lot">
@@ -68,14 +68,9 @@
             <td mat-cell *matCellDef="let row"> {{row.lot}} </td>
           </ng-container>
 
-          <ng-container matColumnDef="modelCode">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header> modelCode </th>
-            <td mat-cell *matCellDef="let row"> {{row.modelCode}} </td>
-          </ng-container>
-
-          <ng-container matColumnDef="modelName">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header> modelName </th>
-            <td mat-cell *matCellDef="let row"> {{row.modelName}} </td>
+          <ng-container matColumnDef="internalCode">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> internalCode </th>
+            <td mat-cell *matCellDef="let row"> {{row.internalCode}} </td>
           </ng-container>
 
           <ng-container matColumnDef="qty">
@@ -83,14 +78,9 @@
             <td mat-cell *matCellDef="let row"> {{row.qty}} </td>
           </ng-container>
 
-          <ng-container matColumnDef="printNo">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header> printNo </th>
-            <td mat-cell *matCellDef="let row"> {{row.printNo}} </td>
-          </ng-container>
-
           <ng-container matColumnDef="printHistory">
             <th mat-header-cell *matHeaderCellDef mat-sort-header> printHistory </th>
-            <td mat-cell *matCellDef="let row"> {{row.printHistory}} </td>
+            <td mat-cell *matCellDef="let row"> {{showPrintHistory(row.printHistory)}} </td>
           </ng-container>
 
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>

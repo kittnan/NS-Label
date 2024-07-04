@@ -8,7 +8,7 @@ import { environment } from 'src/environments/environment';
 export class HttpFormService {
 
   private URL = environment.API;
-  private SUB = 'form'
+  private SUB = 'shipping'
   constructor(private http: HttpClient) { }
 
   get(params: HttpParams): Observable<any> {

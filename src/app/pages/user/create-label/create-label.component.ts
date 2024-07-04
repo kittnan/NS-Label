@@ -3,7 +3,7 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
 import * as JsBarcode from 'jsbarcode';
 import * as moment from 'moment';
 import * as QRCode from 'qrcode';
-import { lastValueFrom } from 'rxjs';
+import { debounceTime, lastValueFrom } from 'rxjs';
 import { HttpModelService } from 'src/app/http/http-model.service';
 import { HttpPkta117Service } from 'src/app/http/http-pkta117.service';
 import { ConvertTextService } from 'src/app/service/convert-text.service';
@@ -14,6 +14,8 @@ import { OneLotService } from './one-lot.service';
 import { ManyLotService } from './many-lot.service';
 import { HttpFormService } from 'src/app/http/http-form.service';
 import { HttpSendingService } from 'src/app/http/http-sending.service';
+import { FormControl } from '@angular/forms';
+import { QrCodeAndBarcodeService } from './qr-code-and-barcode.service';
 
 export interface FORM {
   modelName?: any | null,
@@ -57,13 +59,21 @@ export class CreateLabelComponent {
     boxNo: null,
 
   }
-  pkta117: any = null
-  models: any = null
+  // pkta117: any = null
+  // models: any = null
   dataSending: any = []
   // manyLot: boolean = false
   model: any
   mode: any = null
+  pkta117Main: any
 
+
+  // todo new *****************************************************
+  shippingInputControl = new FormControl();
+  shipment: any
+  // sendingInputControl = new FormControl();
+  sendingItems: any = []
+  sendingResultItems: any = []
   constructor(
     private $convertText: ConvertTextService,
     private $pkta117: HttpPkta117Service,
@@ -73,40 +83,215 @@ export class CreateLabelComponent {
     private $oneLot: OneLotService,
     private $manyLot: ManyLotService,
     private $form: HttpFormService,
-    private $sending: HttpSendingService
+    private $sending: HttpSendingService,
+    private $qrCodeAndBarcode: QrCodeAndBarcodeService
   ) {
 
   }
   async ngOnInit(): Promise<void> {
     try {
-      const resDataPKTA117 = await lastValueFrom(this.$pkta117.get(new HttpParams()))
-      this.pkta117 = resDataPKTA117
-      const resDataModel = await lastValueFrom(this.$model.get(new HttpParams()))
-      this.models = resDataModel
-
+      this.shippingInputControl.valueChanges.pipe(
+        debounceTime(500)
+      ).subscribe(() => {
+        this.shippingInputControl.setValue('');
+      });
+      let { pkta117, models } = await this.getInitialData()
+      this.pkta117Main = pkta117
     } catch (error) {
       console.log("🚀 ~ error:", error)
     }
   }
+  async getInitialData() {
+    const resDataPKTA117 = await lastValueFrom(this.$pkta117.get(new HttpParams()))
+    const pkta117 = resDataPKTA117
+    const resDataModel = await lastValueFrom(this.$model.get(new HttpParams()))
+    const models = resDataModel
+    return { pkta117, models }
+  }
 
-  generateBarcodeDataURL(barcodeValue: any, options: any) {
-    return new Promise((resolve, reject) => {
-      try {
-        const canvas = document.createElement('canvas');
-        JsBarcode(canvas, barcodeValue, options);
-        const dataURL = canvas.toDataURL('image/png');
-        resolve(dataURL);
-      } catch (error) {
-        reject(error);
+  blockCtrlV(event: KeyboardEvent) {
+    if (event.ctrlKey && event.key === 'v') {
+      event.preventDefault();
+    }
+    if (event.key === 'Tab' || event.key === 'Enter') {
+      let text: any = this.shippingInputControl.value
+      if (text) {
+        this.clearInput()
+        this.onShipping(text)
       }
-    });
-  };
+    }
+  }
+  blockRightClick(event: MouseEvent) {
+    event.preventDefault();
+  }
+
+  async onShipping(text: string) {
+    try {
+      let shipmentTextSp: any = text.split(',')
+      const seident = shipmentTextSp[shipmentTextSp.length - 1]
+
+      let { pkta117, models } = await this.getInitialData()
+
+      if (!pkta117.some((item: any) => item['Customer SO#'] == seident)) throw 'not found SEIDENT In PKTA117, please upload again!!!!!'
+
+      // TODO MIX LOT
+      if (text.toLocaleLowerCase().includes('mix lot')) {
+        this.shipment = {
+          customerDes: shipmentTextSp[0],
+          total: Number(shipmentTextSp[1]),
+          box: shipmentTextSp[2],
+          lot: [],
+          shipDate: moment(shipmentTextSp[shipmentTextSp.length - 1], 'DD/MM/YY').toDate(),
+          org: text
+        }
+        let countMix: any = shipmentTextSp[4].toLocaleLowerCase().replace('mix lot', '')
+        countMix = countMix.length + 1
+        for (let i = 0; i < countMix; i++) {
+          this.shipment.lot = 'mix lot'
+          this.sendingItems.push({
+            id: `text${this.sendingItems.length + 1}`
+          })
+        }
+        this.jumpToFirstSendingScan()
+      } else
+
+
+        // TODO ONE LOT
+        if (text.split(',').length == 6) {
+          this.shipment = {
+            customerDes: shipmentTextSp[0],
+            total: Number(shipmentTextSp[1]),
+            box: shipmentTextSp[2],
+            lot: [],
+            shipDate: moment(shipmentTextSp[shipmentTextSp.length - 1], 'DD/MM/YY').toDate(),
+            org: text
+          }
+          for (let i = 0; i < text.split(',').length; i++) {
+            const element = text.split(',')[i];
+            if (element.toLocaleLowerCase().includes('pcs')) {
+              let elemSP = element.split(' ')
+              let newLot = {
+                name: elemSP[0],
+                qty: Number(elemSP[2])
+              }
+              this.shipment.lot.push(newLot)
+              this.sendingItems.push({
+                id: `text${this.sendingItems.length + 1}`
+              })
+            }
+          }
+          this.jumpToFirstSendingScan()
+
+        } else
+
+
+          // TODO MANY LOT
+          if (text.split(',').length >= 7) {
+            this.shipment = {
+              customerDes: shipmentTextSp[0],
+              total: Number(shipmentTextSp[1]),
+              box: shipmentTextSp[2],
+              lot: [],
+              shipDate: moment(shipmentTextSp[3], 'DD/MM/YY').toDate(),
+              org: text
+            }
+            for (let i = 0; i < text.split(',').length; i++) {
+              const element = text.split(',')[i];
+              if (element.toLocaleLowerCase().includes('pcs')) {
+                let elemSP = element.split(' ')
+                let newLot = {
+                  name: elemSP[0],
+                  qty: Number(elemSP[2])
+                }
+                this.shipment.lot.push(newLot)
+                this.sendingItems.push({
+                  id: `text${this.sendingItems.length + 1}`
+                })
+              }
+            }
+            this.jumpToFirstSendingScan()
+
+          }
+
+
+
+    } catch (error) {
+      console.log("🚀 ~ error:", error)
+      setTimeout(() => {
+        Swal.fire(JSON.stringify(error), '', 'error')
+
+      }, 500);
+    }
+  }
+
+
+  blockCtrlV2(event: KeyboardEvent, index: number, id: string) {
+    if (event.ctrlKey && event.key === 'v') {
+      event.preventDefault();
+    }
+    if (event.key === 'Tab' || event.key === 'Enter') {
+      this.sumResultSendingScan(this.sendingItems[index][id], id)
+    }
+  }
+  blockRightClick2(event: MouseEvent) {
+    event.preventDefault();
+  }
+
+  async sumResultSendingScan(text: string, id: string) {
+    try {
+      if (this.sendingResultItems.some((item: any) => item.org == text)) throw 'duplicate'
+      let spText: any = text.split(',')
+      const resultScan: any = {
+        lot: spText[0],
+        box: spText[1],
+        internalCode: spText[2],
+        sendingDate: moment(spText[3], 'DD/MM/YY').toDate(),
+        qty: Number(spText[4]),
+        org: text
+      }
+      if (this.shipment?.lot.toString().toLowerCase() != 'mix lot' && this.shipment?.lot.length > 0 && !this.shipment?.org.includes(resultScan.lot)) throw 'no lot in shipping'
+      for (const key in resultScan) {
+        if (!resultScan[key]) throw `${key} = no data`
+      }
+
+      let { pkta117, models } = await this.getInitialData()
+
+      let model = this.checkResultWithInterModel(resultScan.internalCode, models)
+      if (model) {
+        this.form.PO = model.po
+        this.shipment.PO = model.po
+        const resultScanObj = await this.genQrCode(resultScan, model)
+        this.sendingResultItems.push(resultScanObj)
+      }
+
+
+      let sum = this.sendingResultItems.reduce((p: any, n: any) => p += n.qty, 0)
+      if (this.shipment.total == sum) throw 'OK'
+      let idSp: any = id.split('text')
+      let newId = `text${Number(idSp[1]) + 1}`
+      this.jumpToSendingScan(newId)
+    } catch (error) {
+      console.log("🚀 ~ error:", error)
+      setTimeout(() => {
+        if (JSON.stringify(error).includes('OK')) {
+          Swal.fire(JSON.stringify(error), '', 'success')
+        } else {
+          Swal.fire(JSON.stringify(error), '', 'error')
+
+        }
+
+      }, 500);
+    }
+
+  }
+
+
   async onUpload117($event: any) {
     try {
       let file: any = $event.target.files as File;
       const data = await this.$convertText.continueFiles(file)
       const resData = await lastValueFrom(this.$pkta117.import(data))
-      this.pkta117 = resData
+      this.pkta117Main = resData
       Swal.fire({
         title: "SUCCESS",
         icon: 'success',
@@ -117,177 +302,125 @@ export class CreateLabelComponent {
       console.log("🚀 ~ error:", error)
     }
   }
-  onScanIndicate($event: any) {
-    if ($event.key == 'Enter' || $event.key == 'Tab') {
-      let value = this.scan.nativeElement.value
-      value = value?.length > 0 ? value.trim() : value
-      this.scan.nativeElement.value = ''
-      this.scan.nativeElement.focus()
-      setTimeout(() => {
-        try {
-          let spValue = value.split(',')
-          if (spValue.length !== 6) {
-            // this.manyLot = true
-            // this.manageManyLot(value, spValue)
-            // this.scanSending.nativeElement.focus()
-            const { form, model }: any = this.$manyLot.many(spValue, this.models, this.pkta117)
-            if (!form || !model) throw ''
-            this.form = form
-            this.model = model
-            setTimeout(() => {
-              this.scanSending.nativeElement.focus()
-            }, 100);
-            this.mode = 'many'
-
-          } else if (spValue[4] != 'MIX LOT') {
-            const { form, model }: any = this.$oneLot.one(spValue, this.models, this.pkta117)
-            if (!form || !model) throw ''
-            this.form = form
-            this.model = model
-            setTimeout(() => {
-              this.scanSending.nativeElement.focus()
-            }, 100);
-            this.mode = 'one'
-
-            // console.log('normal');
-            // this.manyLot = false
-            // this.manageNormalLotAndMixLot(value, spValue)
-            // this.scanSending.nativeElement.focus()
-          } else {
-            const { form, model }: any = this.$mixLot.mix(spValue, this.models, this.pkta117)
-            if (!form || !model) throw ''
-            this.form = form
-            this.model = model
-            setTimeout(() => {
-              this.scanSending.nativeElement.focus()
-            }, 100);
-            this.mode = 'mix'
-
-          }
-        } catch (error) {
-          console.log("🚀 ~ error:", error)
-        }
-        // let dataFound = this.pkta117.find((item:any)=>item['Cust PO#']==value)
-      }, 100);
-    }
-  }
 
 
-
-  async onScanSending($event: any) {
-    try {
-      if ($event.key == 'Enter' || $event.key == 'Tab') {
-        let value = this.scanSending.nativeElement.value
-        value = value?.length > 0 ? value.trim() : value
-
-        if (this.mode == 'many') {
-          this.dataSending = await this.$manyLot.manySend(value, this.form, this.model, this.dataSending)
-          this.scanSending.nativeElement.value = ''
-          setTimeout(() => {
-            this.scanSending.nativeElement.focus()
-          }, 100);
-        }
-        if (this.mode == 'one') {
-          this.dataSending = await this.$oneLot.oneSend(value, this.form, this.model, this.dataSending)
-          this.scanSending.nativeElement.value = ''
-          setTimeout(() => {
-            this.scanSending.nativeElement.focus()
-          }, 100);
-
-        }
-        if (this.mode == 'mix') {
-          this.dataSending = await this.$mixLot.mixSend(value, this.form, this.model, this.dataSending)
-          this.scanSending.nativeElement.value = ''
-          setTimeout(() => {
-            this.scanSending.nativeElement.focus()
-          }, 100);
-
-        }
-      }
-    } catch (error) {
-      console.log("🚀 ~ error:", error)
-
-    }
-
-  }
-
-
-  // todo summary total qty scan
-  sumScan() {
-    return this.dataSending.reduce((p: any, n: any) => {
-      return p += Number(n.qty)
-    }, 0)
-  }
-
-  // todo class
-  scanBarClass() {
-    if (!this.form.qty) return 'bg-red-300'
-    if (this.sumScan() != Number(this.form.qty)) return 'bg-red-300'
-    return 'bg-green-100'
-  }
 
   // todo status upload pkta117
   fileUploadPKTA117Class() {
-    if (this.pkta117 && this.pkta117.length > 0) {
+    if (this.pkta117Main && this.pkta117Main.length > 0) {
       return 'bg-green-100'
     }
     return 'bg-red-400'
   }
-
   // todo show lasted upload pkta117
   showLastPKTA117() {
-    if (this.pkta117 && this.pkta117.length > 0) {
-      return moment(this.pkta117[0].createdAt).format('DD-MMM-YYYY, HH:mm')
+    if (this.pkta117Main && this.pkta117Main.length > 0) {
+      return moment(this.pkta117Main[0].createdAt).format('DD-MMM-YYYY, HH:mm')
     }
     return 'not have pkta117'
   }
 
-
-  // todo print
-  onClickPrint() {
-    let name: any = new Date().getTime()
-    this.$label.generatePDF(name)
+  checkResultWithInterModel(result: any, models: any) {
+    return models.find((item: any) => item.internalModel == result)
   }
 
-  // todo submit
-  async onSubmit() {
-    try {
-      const newData = {
-        ...this.form,
-        model: this.model,
-        mode: this.mode,
-      }
-      const { runNo } = await lastValueFrom(this.$form.runNo())
-      newData['runNo'] = runNo
-      await lastValueFrom(this.$form.create(newData))
-      await lastValueFrom(this.$sending.create(this.dataSending.map((item: any) => {
-        return {
-          ...item,
-          runNo: runNo,
-          printNo: 0,
-          printHistory: null
-        }
-      })))
-      Swal.fire({
-        title: 'Success',
-        icon: 'success',
-        showConfirmButton: false,
-        timer: 1500
-      }).then(() => location.reload())
-    } catch (error) {
-      console.log("🚀 ~ error:", error)
+
+  clearInput() {
+    this.shippingInputControl.setValue('')
+    // this.sendingInputControl.setValue('')
+    this.shipment = null
+    this.sendingItems = []
+    this.sendingResultItems = []
+  }
+  jumpToFirstSendingScan() {
+    setTimeout(() => {
+      let el: any = document.getElementById('text1')
+      el?.focus()
+    }, 300);
+  }
+  jumpToSendingScan(id: string) {
+    setTimeout(() => {
+      let el: any = document.getElementById(id)
+      el?.focus()
+    }, 300);
+  }
+  showTotal() {
+    if (this.shipment?.total) return Number(this.shipment.total).toLocaleString()
+    return ''
+  }
+  showQty() {
+    if (this.sendingResultItems && this.sendingResultItems.length > 0) {
+      return this.sendingResultItems.reduce((p: any, n: any) => p += n.qty, 0)
+    }
+    return ''
+  }
+  scanSuccess() {
+    let sum = this.sendingResultItems?.reduce((p: any, n: any) => p += n.qty, 0)
+    if (this.shipment?.total == sum) return true
+    return false
+  }
+
+  async genQrCode(resultScan: any, model: any) {
+    const valueBarcode1 = `A${moment().format('YYYY')}0${resultScan.box}`
+    const barcode1 = await this.$qrCodeAndBarcode.genBarcode1(valueBarcode1)
+
+    const valueBarcode2 = model.partName
+    const barcode2 = await this.$qrCodeAndBarcode.genBarcode2(valueBarcode2)
+
+    const tempValueBarcode3 = resultScan.qty
+    const barcode3 = await this.$qrCodeAndBarcode.genBarcode3(tempValueBarcode3)
+    const valueBarcode3 = tempValueBarcode3.toString().padStart(6, '0')
+
+    const valueBarcode4 = `000000${resultScan.lot.toString()}`
+    const barcode4 = await this.$qrCodeAndBarcode.genBarcode4(valueBarcode4)
+
+    const date = moment(this.shipment.shipDate).format('DDMMYY')
+
+    let valueQrCode = `<[!3S${this.form.PO}!P${valueBarcode2}!Q${valueBarcode3}!1T${valueBarcode4}!D${date}!S${moment().format('YYYY')}0${resultScan.box}!`
+    const qrCode = await QRCode.toDataURL(valueQrCode)
+    return {
+      ...resultScan,
+      barcode1: barcode1,
+      barcode2: barcode2,
+      barcode3: barcode3,
+      barcode4: barcode4,
+      valueBarcode1: valueBarcode1,
+      valueBarcode2: valueBarcode2,
+      valueBarcode3: valueBarcode3,
+      valueBarcode4: valueBarcode4,
+      qrCode: qrCode,
+      date: date,
+      remark1: model.remark1,
+      remark2: model.remark2,
+      remark3: model.remark3,
+      unit: model.unit,
+      runNo: this.dataSending.length + 1,
+      PO: this.form.PO
     }
   }
 
-  onChangePO() {
-    this.dataSending = this.dataSending.map((data: any) => {
-      data.PO = this.form.PO
-      return data
-    })
+  clickClearScanSending(id: string) {
+    this.jumpToSendingScan(id)
   }
 
-  onReset() {
-    this.dataSending = []
+
+  async onClickPrint() {
+    const { runNo } = await lastValueFrom(this.$form.runNo())
+    this.shipment.runNo = runNo
+    const sendingUpdate = this.sendingResultItems.map((item: any) => {
+      item.runNo = runNo
+      return item
+    })
+    await lastValueFrom(this.$form.create(this.shipment))
+    await lastValueFrom(this.$sending.create(sendingUpdate))
+    let name: any = new Date().getTime()
+    this.$label.generatePDF(name)
   }
+  checkPrint() {
+    let sum = this.sendingResultItems?.reduce((p: any, n: any) => p += n.qty, 0)
+    if (this.shipment?.total == sum) return false
+    return true
+  }
+
 }
 

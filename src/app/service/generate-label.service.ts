@@ -46,6 +46,9 @@ export class GenerateLabelService {
               'FAST'
             );
             await doc.save(`${name}.pdf`);
+            setTimeout(() => {
+              location.reload()
+            }, 400);
             // this.router.navigate(['user/print'])
             this.$loader.stop()
           } else {
@@ -74,6 +77,9 @@ export class GenerateLabelService {
               );
               if (index + 1 === div.length) {
                 await doc.save(`${name}.pdf`);
+                setTimeout(() => {
+                  location.reload()
+                }, 400);
                 // this.router.navigate(['user/print'])
                 this.$loader.stop()
               }

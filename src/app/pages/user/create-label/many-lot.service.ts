@@ -28,6 +28,7 @@ export class ManyLotService {
         lot: lotArr.map((item: any) => this.cutAndTrim(item)),
         PO: tailArr[0]
       }
+      console.log("🚀 ~ resultScan:", resultScan)
       // const dataFoundInPKTA117 = pkta117.find((item: any) => item['Cust PO#'] == resultScan.PO)
       // if (!dataFoundInPKTA117) throw 'not found in pkta117'
       const dataFoundAtModel = models.find((model: any) => model['modelName'] == resultScan.modelName)
@@ -83,6 +84,7 @@ export class ManyLotService {
         qty: spValue[4],
         date: new Date()
       }
+
       if (!this.form.lotNo) throw 'Not found lot'
       if (resultScan.internalModel != this.form.modelCode) throw 'Model not correct'
       const lotTargetIndex: any = this.form.lotNo.findIndex((item: any) => item.lot == resultScan.lot)

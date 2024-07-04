@@ -5,7 +5,7 @@
     <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start center" fxLayoutGap="10" class="mt-4">
       <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="center center" class="mb-3">
         <app-sub-title fxFlex="100" [title]="'Upload PKTA177'"></app-sub-title>
-        <mat-form-field fxFlex="100" fxFlex.gt-md="30" appearance="outline" floatLabel="always"
+        <mat-form-field fxFlex="100" fxFlex.gt-md="70" appearance="outline" floatLabel="always"
           [class]="fileUploadPKTA117Class()">
           <mat-label>File Upload 117 {{showLastPKTA117()}} </mat-label>
           <button mat-icon-button matSuffix (click)="file1.click()">
@@ -14,177 +14,73 @@
           <input [readonly]="true" matInput type="text" (click)="file1.click()">
           <input type="file" hidden #file1 (change)="onUpload117($event)">
         </mat-form-field>
-
       </div>
+
       <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="center center" class="mb-3">
-        <app-sub-title fxFlex="100" [title]="'Indicate scan'" class="mt-6"></app-sub-title>
-        <mat-form-field fxFlex="100" fxFlex.gt-md="30" appearance="outline" floatLabel="always" class="bg-green-300">
-          <mat-label>Scan Indicate Label</mat-label>
-          <input matInput #scan (keydown)="onScanIndicate($event)">
+        <app-sub-title fxFlex="100" [title]="'Shipping scan'" class="mt-6"></app-sub-title>
+        <mat-form-field fxFlex="100" fxFlex.gt-md="70" appearance="outline" floatLabel="always" >
+          <mat-label>Scan Shipping Label</mat-label>
+          <input matInput [formControl]="shippingInputControl" (keydown)="blockCtrlV($event)"
+            (contextmenu)="blockRightClick($event)">
           <mat-icon matSuffix>qr_code_scanner</mat-icon>
         </mat-form-field>
       </div>
-      <app-sub-title fxFlex="100" [title]="'Detail'" class="mt-6"></app-sub-title>
-
-      <mat-form-field fxFlex="100" fxFlex.gt-md="30" appearance="outline" floatLabel="always">
-        <mat-label>Model Name</mat-label>
-        <input matInput [(ngModel)]="form.modelName">
-      </mat-form-field>
-      <mat-form-field fxFlex="100" fxFlex.gt-md="30" appearance="outline" floatLabel="always">
-        <mat-label>Shipment date</mat-label>
-        <input matInput [(ngModel)]="form.shipmentDate">
-      </mat-form-field>
-      <mat-form-field fxFlex="100" fxFlex.gt-md="30" appearance="outline" floatLabel="always">
-        <mat-label>Model code</mat-label>
-        <input matInput [(ngModel)]="form.modelCode">
-      </mat-form-field>
-      <mat-form-field fxFlex="100" fxFlex.gt-md="30" appearance="outline" floatLabel="always">
-        <mat-label>Part Number</mat-label>
-        <input matInput [(ngModel)]="form.partNumber">
-      </mat-form-field>
-      <mat-form-field fxFlex="100" fxFlex.gt-md="30" appearance="outline" floatLabel="always">
-        <mat-label>PO </mat-label>
-        <input matInput [(ngModel)]="form.PO" (blur)="onChangePO()" >
-      </mat-form-field>
-      <mat-form-field fxFlex="100" fxFlex.gt-md="30" appearance="outline" floatLabel="always">
-        <mat-label>Q'ty</mat-label>
-        <input matInput [(ngModel)]="form.qty">
-      </mat-form-field>
-      <mat-form-field fxFlex="100" fxFlex.gt-md="30" appearance="outline" floatLabel="always">
-        <mat-label>Ship Place</mat-label>
-        <input matInput [(ngModel)]="form.shipPlace">
-      </mat-form-field>
-      <mat-form-field fxFlex="100" fxFlex.gt-md="30" appearance="outline" floatLabel="always">
-        <mat-label>Ship to</mat-label>
-        <input matInput [(ngModel)]="form.shipTo">
-      </mat-form-field>
-      <mat-form-field fxFlex="100" fxFlex.gt-md="30" appearance="outline" floatLabel="always">
-        <mat-label>Invoice No </mat-label>
-        <input matInput [(ngModel)]="form.invoice">
-      </mat-form-field>
-      <mat-form-field fxFlex="100" fxFlex.gt-md="30" appearance="outline" floatLabel="always">
-        <mat-label>TTL Q'ty</mat-label>
-        <input matInput [(ngModel)]="form.TTL">
-      </mat-form-field>
-      <mat-form-field fxFlex="100" fxFlex.gt-md="30" appearance="outline" floatLabel="always">
-        <mat-label>Lot No.</mat-label>
-        <input matInput [(ngModel)]="form.lotShow">
-      </mat-form-field>
-      <mat-form-field fxFlex="100" fxFlex.gt-md="30" appearance="outline" floatLabel="always">
-        <mat-label>Box No</mat-label>
-        <input matInput [(ngModel)]="form.boxNo">
-      </mat-form-field>
-
-      <app-sub-title fxFlex="100" [title]="'Sending Scan'" class="mt-6"></app-sub-title>
-
-
       <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="center center" class="mb-3">
-        <mat-form-field fxFlex="100" fxFlex.gt-md="30" appearance="outline" floatLabel="always" class="bg-yellow-50">
-          <mat-label>Scan Sending Label</mat-label>
-          <input matInput id="scanSending" #scanSending (keydown)="onScanSending($event)">
-        </mat-form-field>
-        <button class="ml-3">
-          <div fxLayout="row wrap" fxLayoutAlign="center center">
-            <mat-icon matSuffix>qr_code_scanner</mat-icon>
-          </div>
-        </button>
-        <button mat-raised-button color="accent" class="ml-3" (click)="onSubmit()">
+        {{shipment?.org}}
+      </div>
+      <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="center center">
+        <button color="warn" mat-button (click)="clearInput()">
           <div fxLayout="row wrap" fxLayoutAlign="center center" fxLayoutGap="5">
             <mat-icon class="mat-18">
-              done_all
+              restart_alt
             </mat-icon>
             <span>
-              Create
+              Reset
             </span>
           </div>
         </button>
       </div>
-    </div>
 
-
-    <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start stretch" class="rounded-md p-2" [class]="scanBarClass()">
-      <div fxLayout="row wrap" fxLayoutAlign="center center" class="mr-3">
-        <label>Total</label>
-        <span>
-          {{form.qty? form.qty:0}}
-        </span>
-      </div>
-      <div fxLayout="row wrap" fxLayoutAlign="center center">
-        <label>Scan</label>
-        <span>
-          {{sumScan()}}
-        </span>
-      </div>
-      <button mat-button class="ml-16" (click)="onReset()" >
-        <div fxLayout="row wrap" fxLayoutAlign="center center" fxLayoutGap="5">
-          <mat-icon class="mat-18">
-            restart_alt
-          </mat-icon>
-          <span>
-            Reset
-          </span>
-        </div>
-      </button>
-      <div fxFlex="auto"></div>
-      <div fxLayout="row wrap" fxLayoutAlign="end center" class="pr-4">
-        <button mat-button (click)="onClickPrint()">
-          <div fxLayout="row wrap" fxLayoutAlign="center center">
-            <img src="./assets/icons/pdf.png" alt="" style="width: 25px; height: 25px;">
-            <span>
-              Print
+      <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="center center" [ngClass]="{'bg-green-300': !checkPrint()}" class="mb-3">
+        <app-sub-title fxFlex="100" [title]="'Sending scan'" class="mt-6"></app-sub-title>
+        <ng-container *ngFor="let item of this.sendingItems; let i=index">
+          <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="center center">
+            <span style="cursor: pointer;" (click)="item[item.id]='';clickClearScanSending(item.id)" class="pe-4">
+              ❌
             </span>
+            <mat-form-field fxFlex="100" fxFlex.gt-md="70" appearance="outline" floatLabel="always"
+              >
+              <mat-label>Scan Sending Label {{item.id}}</mat-label>
+              <input matInput [id]="item.id" [(ngModel)]="item[item.id]" (keydown)="blockCtrlV2($event,i,item.id)"
+                (contextmenu)="blockRightClick2($event)">
+              <mat-icon matSuffix>qr_code_scanner</mat-icon>
+            </mat-form-field>
           </div>
-        </button>
+        </ng-container>
+        <h1 style="font-size: 60px; font-weight: bold;">
+          {{showQty()}} / {{showTotal()}}
+        </h1>
       </div>
+
+      <ng-container *ngIf="scanSuccess()">
+        <app-sub-title fxFlex="100" [title]="'Detail'" class="mt-6"></app-sub-title>
+        <mat-form-field fxFlex="100" fxFlex.gt-md="70" appearance="outline" floatLabel="always">
+          <mat-label>PO</mat-label>
+          <input matInput [(ngModel)]="form.PO">
+        </mat-form-field>
+      </ng-container>
+
+
+
+
+
+
     </div>
 
 
-    <ng-container *ngFor="let item of dataSending ; let i=index">
-      <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="space-around center">
-        <div fxLayout="row wrap" fxLayoutAlign="start center">
-          <label>Lot</label>
-          <span class="text-sm">
-            {{item.lot}}
-          </span>
-        </div>
-        <div fxLayout="row wrap" fxLayoutAlign="start center">
-          <label>Box no</label>
-          <span class="text-sm">
-            {{item.cs}}
-          </span>
-        </div>
-        <div fxLayout="row wrap" fxLayoutAlign="start center">
-          <label>InternalModel</label>
-          <span class="text-sm">
-            {{item.internalModel}}
-          </span>
-        </div>
-        <div fxLayout="row wrap" fxLayoutAlign="start center">
-          <label>Sending Date</label>
-          <span class="text-sm">
-            {{item.sendingDate}}
-          </span>
-        </div>
-        <div fxLayout="row wrap" fxLayoutAlign="start center">
-          <label>Q'ty</label>
-          <span class="text-sm">
-            {{item.qty}}
-          </span>
-        </div>
-        <div fxLayout="row wrap" fxLayoutAlign="start center">
-          <label>Scan Date</label>
-          <span class="text-sm">
-            {{item.date | date:'dd/MMM/YY, hh:mm'}}
-          </span>
-        </div>
-      </div>
-    </ng-container>
-
-    <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start start" class="mt-3">
-      <!-- <div fxLayout="row wrap" fxLayoutAlign="start start"
-            style="width: 420.36px; height: 213.39px; border: 1px solid black;"> -->
-      <div fxLayout="row wrap" fxLayoutAlign="start start" id="print" *ngFor="let data of dataSending; let i=index"
-        class="mr-3" style="width: 420.36px; height: 213.39px; ">
+    <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="space-around start" class="mt-3">
+      <div fxLayout="row wrap" fxLayoutAlign="start start" id="print"
+        *ngFor="let data of sendingResultItems; let i=index" class="mr-3" style="width: 420.36px; height: 213.39px; ">
         <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start stretch" style="height: 110px;">
           <div fxFlex="70" fxLayout="row wrap" fxLayoutAlign="start end" class="bb" style="padding:5px 0 10px 0">
             <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start start" style="padding:10px 10px;">
@@ -205,7 +101,7 @@
             style="padding-top: 5px; padding-bottom: 10px;">
             <div fxFlex="20" fxLayout="row wrap" fxLayoutAlign="end end" style="padding: 0 0 40px 0;">
               <span class="f-a r95">
-                {{model.remark1}}
+                {{data.remark1}}
               </span>
             </div>
             <div fxFlex="70" fxLayout="row wrap" fxLayoutAlign="center end">
@@ -214,7 +110,7 @@
               </div>
               <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="center start">
                 <span class="f-a r8 italic">
-                  {{model.remark2}}
+                  {{data.remark2}}
                 </span>
               </div>
             </div>
@@ -265,7 +161,7 @@
                 <span fxFlex="30" class="f-a r9">
                 </span>
                 <span fxFlex="70" class="f-a r9">
-                  {{model.unit}}
+                  {{data.unit}}
                 </span>
               </div>
             </div>
@@ -276,9 +172,17 @@
       </div>
     </div>
 
+    <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="center center" style="margin-top: 2rem; margin-bottom: 3rem;">
+      <button [disabled]="checkPrint()" mat-button color="primary" (click)="onClickPrint()">
+        <div fxLayout="row wrap" fxLayoutAlign="center center">
+          <img src="./assets/icons/pdf.png" alt="" style="width: 25px; height: 25px;">
+          <span>
+            Print
+          </span>
+        </div>
+      </button>
+    </div>
 
 
   </div>
-
-
 </div>

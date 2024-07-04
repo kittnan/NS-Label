@@ -56,12 +56,16 @@ export class PrintPreviewComponent {
   async onPrint() {
     try {
       await lastValueFrom(this.$sending.createOrUpdate(this.items.map((item: any) => {
-        const fullName = `${this.userLogin.firstName} ${this.userLogin.lastName}`
-        delete item.form
+        // const fullName = `${this.userLogin.firstName} ${this.userLogin.lastName}`
+        const userPrint = {
+          user: this.userLogin,
+          date: new Date()
+        }
+        delete item.shippings
+        delete item.shipping
         return {
           ...item,
-          printNo: item.printNo ? item.printNo + 1 : 1,
-          printHistory: item.printHistory ? [...item.printHistory, fullName] : [fullName],
+          printHistory: item.printHistory?.length > 0 ? [...item.printHistory, userPrint] : [userPrint],
         }
       })))
       let name: any = new Date().getTime()
