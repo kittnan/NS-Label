@@ -66,7 +66,7 @@
         <app-sub-title fxFlex="100" [title]="'Detail'" class="mt-6"></app-sub-title>
         <mat-form-field fxFlex="100" fxFlex.gt-md="70" appearance="outline" floatLabel="always">
           <mat-label>PO</mat-label>
-          <input matInput [(ngModel)]="form.PO">
+          <input [disabled]="true" matInput [(ngModel)]="form.PO">
         </mat-form-field>
       </ng-container>
 
@@ -178,6 +178,14 @@
           <img src="./assets/icons/pdf.png" alt="" style="width: 25px; height: 25px;">
           <span>
             Print
+          </span>
+        </div>
+      </button>
+      <button [disabled]="checkPrint()" mat-button color="primary" (click)="onSubmit()">
+        <div fxLayout="row wrap" fxLayoutAlign="center center">
+          ✅
+          <span>
+            Submit
           </span>
         </div>
       </button>

@@ -133,6 +133,7 @@ export class CreateLabelComponent {
       let { pkta117, models } = await this.getInitialData()
 
       if (!pkta117.some((item: any) => item['Customer SO#'] == seident)) throw 'not found SEIDENT In PKTA117, please upload again!!!!!'
+      console.log(shipmentTextSp);
 
       // TODO MIX LOT
       if (text.toLocaleLowerCase().includes('mix lot')) {
@@ -141,7 +142,7 @@ export class CreateLabelComponent {
           total: Number(shipmentTextSp[1]),
           box: shipmentTextSp[2],
           lot: [],
-          shipDate: moment(shipmentTextSp[shipmentTextSp.length - 1], 'DD/MM/YY').toDate(),
+          shipDate: moment(shipmentTextSp[3], 'DD/MM/YY').toDate(),
           org: text
         }
         let countMix: any = shipmentTextSp[4].toLocaleLowerCase().replace('mix lot', '')
@@ -163,7 +164,7 @@ export class CreateLabelComponent {
             total: Number(shipmentTextSp[1]),
             box: shipmentTextSp[2],
             lot: [],
-            shipDate: moment(shipmentTextSp[shipmentTextSp.length - 1], 'DD/MM/YY').toDate(),
+            shipDate: moment(shipmentTextSp[3], 'DD/MM/YY').toDate(),
             org: text
           }
           for (let i = 0; i < text.split(',').length; i++) {
@@ -373,8 +374,9 @@ export class CreateLabelComponent {
 
     const valueBarcode4 = `000000${resultScan.lot.toString()}`
     const barcode4 = await this.$qrCodeAndBarcode.genBarcode4(valueBarcode4)
+    console.log(this.shipment.shipDate);
 
-    const date = moment(this.shipment.shipDate).format('DDMMYY')
+    const date = moment(this.shipment.shipDate,'DD/MM/YY').format('DDMMYY')
 
     let valueQrCode = `<[!3S${this.form.PO}!P${valueBarcode2}!Q${valueBarcode3}!1T${valueBarcode4}!D${date}!S${moment().format('YYYY')}0${resultScan.box}!`
     const qrCode = await QRCode.toDataURL(valueQrCode)
@@ -420,6 +422,25 @@ export class CreateLabelComponent {
     let sum = this.sendingResultItems?.reduce((p: any, n: any) => p += n.qty, 0)
     if (this.shipment?.total == sum) return false
     return true
+  }
+
+  async onSubmit(){
+    const { runNo } = await lastValueFrom(this.$form.runNo())
+    this.shipment.runNo = runNo
+    const sendingUpdate = this.sendingResultItems.map((item: any) => {
+      item.runNo = runNo
+      return item
+    })
+    await lastValueFrom(this.$form.create(this.shipment))
+    await lastValueFrom(this.$sending.create(sendingUpdate))
+    Swal.fire({
+      title:'OK',
+      icon:'success',
+      showConfirmButton:false,
+      timer:1500
+    }).then(()=>{
+      location.reload()
+    })
   }
 
 }
