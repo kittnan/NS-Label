@@ -1,39 +1,23 @@
-import { HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import * as moment from 'moment';
 import * as QRCode from 'qrcode';
 import { debounceTime, lastValueFrom } from 'rxjs';
-import { HttpFormService } from 'src/app/http/http-form.service';
 import { HttpModelService } from 'src/app/http/http-model.service';
-import { HttpPkta117Service } from 'src/app/http/http-pkta117.service';
-import { HttpSendingService } from 'src/app/http/http-sending.service';
-import { ConvertTextService } from 'src/app/service/convert-text.service';
+import { QrCodeAndBarcodeService } from 'src/app/pages/user/create-label/qr-code-and-barcode.service';
 import { GenerateLabelService } from 'src/app/service/generate-label.service';
 import Swal from 'sweetalert2';
-import { QrCodeAndBarcodeService } from './qr-code-and-barcode.service';
-
-export interface FORM {
-  modelName?: any | null,
-  shipmentDate?: Date | null,
-  modelCode?: any | null,
-  partNumber?: any | null,
-  PO?: any | null,
-  qty?: any | null,
-  shipPlace?: any | null,
-  shipTo?: any | null,
-  invoice?: any | null,
-  TTL?: any | null,
-  lotNo?: any | null,
-  lotShow?: any | null,
-  boxNo?: any | null,
-}
+import * as XLSX from 'xlsx';
+import { HttpSapFormService } from '../../http/http-sap-form.service';
+import { HttpSapPkta117Service } from '../../http/http-sap-pkta117.service';
+import { HttpSapSendingService } from '../../http/http-sap-sending.service';
 @Component({
-  selector: 'app-create-label',
-  templateUrl: './create-label.component.html',
-  styleUrls: ['./create-label.component.scss']
+  selector: 'app-sap-create-label',
+  templateUrl: './sap-create-label.component.html',
+  styleUrls: ['./sap-create-label.component.scss']
 })
-export class CreateLabelComponent {
+export class SapCreateLabelComponent {
 
   // todo element files control
   @ViewChild('scan', { static: true }) scan!: ElementRef;
@@ -53,7 +37,7 @@ export class CreateLabelComponent {
     lotNo: null,
     lotShow: [],
     boxNo: null,
-
+    sap: true
   }
   // pkta117: any = null
   // models: any = null
@@ -71,13 +55,12 @@ export class CreateLabelComponent {
   sendingItems: any = []
   sendingResultItems: any = []
   constructor(
-    private $convertText: ConvertTextService,
-    private $pkta117: HttpPkta117Service,
+    private $pkta117: HttpSapPkta117Service,
     private $model: HttpModelService,
     private $label: GenerateLabelService,
-    private $form: HttpFormService,
-    private $sending: HttpSendingService,
-    private $qrCodeAndBarcode: QrCodeAndBarcodeService
+    private $form: HttpSapFormService,
+    private $sending: HttpSapSendingService,
+    private $qrCodeAndBarcode: QrCodeAndBarcodeService,
   ) {
 
   }
@@ -121,12 +104,14 @@ export class CreateLabelComponent {
   async onShipping(text: string) {
     try {
       let shipmentTextSp: any = text.split(',')
-      const seident = shipmentTextSp[shipmentTextSp.length - 1]
+      const seident = shipmentTextSp[shipmentTextSp.length - 1].trim()
 
       let { pkta117, models } = await this.getInitialData()
 
-      if (!pkta117.some((item: any) => item['Customer SO#'] == seident)) throw 'not found SEIDENT In PKTA117, please upload again!!!!!'
-      console.log(shipmentTextSp);
+      if (
+        !pkta117.some((item: any) => item['Customer SO#'] == seident) &&
+        !pkta117.some((item: any) => item['PO number'] == seident)
+      ) throw 'not found SEIDENT In SAP Data, please upload again!!!!!'
 
       // TODO MIX LOT
       if (text.toLocaleLowerCase().includes('mix lot')) {
@@ -136,7 +121,8 @@ export class CreateLabelComponent {
           box: shipmentTextSp[2],
           lot: [],
           shipDate: moment(shipmentTextSp[3], 'DD/MM/YY').toDate(),
-          org: text
+          org: text,
+          sap: true
         }
         let countMix: any = shipmentTextSp[4].toLocaleLowerCase().replace('mix lot', '')
         countMix = countMix.length + 1
@@ -158,7 +144,8 @@ export class CreateLabelComponent {
             box: shipmentTextSp[2],
             lot: [],
             shipDate: moment(shipmentTextSp[3], 'DD/MM/YY').toDate(),
-            org: text
+            org: text,
+            sap: true
           }
           for (let i = 0; i < text.split(',').length; i++) {
             const element = text.split(',')[i];
@@ -187,7 +174,8 @@ export class CreateLabelComponent {
               box: shipmentTextSp[2],
               lot: [],
               shipDate: moment(shipmentTextSp[3], 'DD/MM/YY').toDate(),
-              org: text
+              org: text,
+              sap: true
             }
             for (let i = 0; i < text.split(',').length; i++) {
               const element = text.split(',')[i];
@@ -241,7 +229,8 @@ export class CreateLabelComponent {
         internalCode: spText[2],
         sendingDate: moment(spText[3], 'DD/MM/YY').toDate(),
         qty: Number(spText[4]),
-        org: text
+        org: text,
+        sap: true
       }
       if (this.shipment?.lot.toString().toLowerCase() != 'mix lot' && this.shipment?.lot.length > 0 && !this.shipment?.org.includes(resultScan.lot)) throw 'no lot in shipping'
       for (const key in resultScan) {
@@ -283,7 +272,10 @@ export class CreateLabelComponent {
   async onUpload117($event: any) {
     try {
       let file: any = $event.target.files as File;
-      const data = await this.$convertText.continueFiles(file)
+      if (!file) throw "Can't read file"
+      const data = await this.readExcel(file[0])
+      // console.log("🚀 ~ data:", data)
+      // const data = await this.$convertText.continueFiles(file)
       const resData = await lastValueFrom(this.$pkta117.import(data))
       this.pkta117Main = resData
       Swal.fire({
@@ -296,7 +288,29 @@ export class CreateLabelComponent {
       console.log("🚀 ~ error:", error)
     }
   }
-
+  readExcel(file: File) {
+    return new Promise((resolve) => {
+      const reader: FileReader = new FileReader();
+      reader.onload = (e: any) => {
+        const binaryData = e.target.result;
+        const workbook = XLSX.read(binaryData, { type: 'binary' });
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        const data = XLSX.utils.sheet_to_json(worksheet);
+        const dataMapping = data.map((d: any) => {
+          const item: any = {}
+          for (const key in d) {
+            const orgKey: any = key
+            const newKey: any = orgKey.replaceAll('.', '')
+            item[newKey] = d[key]
+          }
+          return item
+        })
+        resolve(dataMapping);
+      };
+      reader.readAsBinaryString(file);
+    });
+  }
 
 
   // todo status upload pkta117
@@ -311,7 +325,7 @@ export class CreateLabelComponent {
     if (this.pkta117Main && this.pkta117Main.length > 0) {
       return moment(this.pkta117Main[0].createdAt).format('DD-MMM-YYYY, HH:mm')
     }
-    return 'not have pkta117'
+    return 'not have SAP Data'
   }
 
   checkResultWithInterModel(result: any, models: any) {
@@ -367,9 +381,8 @@ export class CreateLabelComponent {
 
     const valueBarcode4 = `000000${resultScan.lot.toString()}`
     const barcode4 = await this.$qrCodeAndBarcode.genBarcode4(valueBarcode4)
-    console.log(this.shipment.shipDate);
 
-    const date = moment(this.shipment.shipDate,'DD/MM/YY').format('DDMMYY')
+    const date = moment(this.shipment.shipDate, 'DD/MM/YY').format('DDMMYY')
 
     let valueQrCode = `<[!3S${this.form.PO}!P${valueBarcode2}!Q${valueBarcode3}!1T${valueBarcode4}!D${date}!S${moment().format('YYYY')}0${resultScan.box}!`
     const qrCode = await QRCode.toDataURL(valueQrCode)
@@ -390,7 +403,8 @@ export class CreateLabelComponent {
       remark3: model.remark3,
       unit: model.unit,
       runNo: this.dataSending.length + 1,
-      PO: this.form.PO
+      PO: this.form.PO,
+      sap: true
     }
   }
 
@@ -413,11 +427,11 @@ export class CreateLabelComponent {
   }
   checkPrint() {
     let sum = this.sendingResultItems?.reduce((p: any, n: any) => p += n.qty, 0)
-    if (this.shipment?.total == sum) return false
+    if (sum >=this.shipment?.total  ) return false
     return true
   }
 
-  async onSubmit(){
+  async onSubmit() {
     const { runNo } = await lastValueFrom(this.$form.runNo())
     this.shipment.runNo = runNo
     const sendingUpdate = this.sendingResultItems.map((item: any) => {
@@ -427,14 +441,13 @@ export class CreateLabelComponent {
     await lastValueFrom(this.$form.create(this.shipment))
     await lastValueFrom(this.$sending.create(sendingUpdate))
     Swal.fire({
-      title:'OK',
-      icon:'success',
-      showConfirmButton:false,
-      timer:1500
-    }).then(()=>{
+      title: 'OK',
+      icon: 'success',
+      showConfirmButton: false,
+      timer: 1500
+    }).then(() => {
       location.reload()
     })
   }
 
 }
-

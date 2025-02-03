@@ -1,0 +1,196 @@
+<app-title [title]="'Create Label With SAP Data'"></app-title>
+<div fxLayout="row wrap" fxLayoutAlign="center start" style="background-color: rgb(196, 255, 252);">
+
+  <div fxFlex="95" fxLayout="row wrap" fxLayoutAlign="center start">
+    <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start center" fxLayoutGap="10" class="mt-4">
+      <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="center center" class="mb-3">
+        <app-sub-title fxFlex="100" [title]="'Upload SAP Data'"></app-sub-title>
+        <mat-form-field fxFlex="100" fxFlex.gt-md="70" appearance="outline" floatLabel="always"
+          [class]="fileUploadPKTA117Class()">
+          <mat-label>File Upload Excel {{showLastPKTA117()}} </mat-label>
+          <button mat-icon-button matSuffix (click)="file1.click()">
+            <mat-icon>attach_file</mat-icon>
+          </button>
+          <input [readonly]="true" matInput type="text" (click)="file1.click()">
+          <input type="file" hidden #file1 (change)="onUpload117($event)">
+        </mat-form-field>
+      </div>
+
+      <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="center center" class="mb-3">
+        <app-sub-title fxFlex="100" [title]="'Shipping scan'" class="mt-6"></app-sub-title>
+        <mat-form-field fxFlex="100" fxFlex.gt-md="70" appearance="outline" floatLabel="always">
+          <mat-label>Scan Shipping Label</mat-label>
+          <input matInput [formControl]="shippingInputControl" (keydown)="blockCtrlV($event)"
+            (contextmenu)="blockRightClick($event)">
+          <mat-icon matSuffix>qr_code_scanner</mat-icon>
+        </mat-form-field>
+      </div>
+      <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="center center" class="mb-3">
+        {{shipment?.org}}
+      </div>
+      <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="center center">
+        <button color="warn" mat-button (click)="clearInput()">
+          <div fxLayout="row wrap" fxLayoutAlign="center center" fxLayoutGap="5">
+            <mat-icon class="mat-18">
+              restart_alt
+            </mat-icon>
+            <span>
+              Reset
+            </span>
+          </div>
+        </button>
+      </div>
+
+      <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="center center" [ngClass]="{'bg-green-300': !checkPrint()}"
+        class="mb-3">
+        <app-sub-title fxFlex="100" [title]="'Sending scan'" class="mt-6"></app-sub-title>
+        <ng-container *ngFor="let item of this.sendingItems; let i=index">
+          <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="center center">
+            <span style="cursor: pointer;" (click)="item[item.id]='';clickClearScanSending(item.id)" class="pe-4">
+              ❌
+            </span>
+            <mat-form-field fxFlex="100" fxFlex.gt-md="70" appearance="outline" floatLabel="always">
+              <mat-label>Scan Sending Label {{item.id}}</mat-label>
+              <input matInput [id]="item.id" [(ngModel)]="item[item.id]" (keydown)="blockCtrlV2($event,i,item.id)"
+                (contextmenu)="blockRightClick2($event)">
+              <mat-icon matSuffix>qr_code_scanner</mat-icon>
+            </mat-form-field>
+          </div>
+        </ng-container>
+        <h1 style="font-size: 60px; font-weight: bold;">
+          {{showQty()}} / {{showTotal()}}
+        </h1>
+      </div>
+
+      <ng-container *ngIf="scanSuccess()">
+        <app-sub-title fxFlex="100" [title]="'Detail'" class="mt-6"></app-sub-title>
+        <mat-form-field fxFlex="100" fxFlex.gt-md="70" appearance="outline" floatLabel="always">
+          <mat-label>PO</mat-label>
+          <input [disabled]="true" matInput [(ngModel)]="form.PO">
+        </mat-form-field>
+      </ng-container>
+
+
+
+
+
+
+    </div>
+
+
+    <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="space-around start" class="mt-3">
+      <div fxLayout="row wrap" fxLayoutAlign="start start" id="print"
+        *ngFor="let data of sendingResultItems; let i=index" class="mr-3" style="width: 420.36px; height: 213.39px; ">
+        <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start stretch" style="height: 110px;">
+          <div fxFlex="70" fxLayout="row wrap" fxLayoutAlign="start end" class="bb" style="padding:5px 0 10px 0">
+            <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start start" style="padding:10px 10px;">
+              <span class="f-a r95 ms-1">
+                PONo#. {{form.PO}}
+              </span>
+            </div>
+            <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start start" style="padding: 5px 10px 0 10px;">
+              <img [src]="data.barcode1" alt="" style="width: 260px; ">
+            </div>
+            <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start start" style="padding: 0 10px;">
+              <span class="f-a r9">
+                {{data.valueBarcode1}}
+              </span>
+            </div>
+          </div>
+          <div fxFlex="30" fxLayout="row wrap" fxLayoutAlign="start stretch" class="bb"
+            style="padding-top: 5px; padding-bottom: 10px;">
+            <div fxFlex="20" fxLayout="row wrap" fxLayoutAlign="end end" style="padding: 0 0 40px 0;">
+              <span class="f-a r95">
+                {{data.remark1}}
+              </span>
+            </div>
+            <div fxFlex="70" fxLayout="row wrap" fxLayoutAlign="center end">
+              <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="center start">
+                <img [src]="data.qrCode" alt="" style="width: 75px !important; height: 75px !important;">
+              </div>
+              <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="center start">
+                <span class="f-a r8 italic">
+                  {{data.remark2}}
+                </span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start start" class="bt" style="height: 110px;">
+          <div fxFlex="60" fxLayout="row wrap" fxLayoutAlign="start start" class="pl-1">
+            <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start start">
+              <span fxFlex="100" class="f-a r10 pb-1">
+                P/N: {{data.valueBarcode2}}
+              </span>
+              <img fxFlex="100" [src]="data.barcode2" alt="">
+
+            </div>
+
+          </div>
+
+          <div fxFlex="40" fxLayout="row wrap" fxLayoutAlign="end end">
+            <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start center" class="r9">
+              <span class="f-a r9 pb-1">
+                Rot Date: {{data.date}}
+              </span>
+            </div>
+            <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="center start">
+              <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="end start" style="padding:0 5px">
+                <img [src]="data.barcode3" alt="">
+              </div>
+              <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="end start" class="f-a r9" style="padding:0 15px">
+                Q:{{data.valueBarcode3}}
+              </div>
+            </div>
+          </div>
+          <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start start">
+            <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start start" class="pl-1">
+              <img [src]="data.barcode4" alt="" style="width: 310px; ">
+            </div>
+            <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start start" class="pl-1">
+              <div fxFlex="50" fxLayout="row wrap" fxLayoutAlign="start center">
+                <span fxFlex="15" class="f-a r9">
+                  LOT
+                </span>
+                <span fxFlex="85" class="f-a r9">
+                  {{data.valueBarcode4}}
+                </span>
+              </div>
+              <div fxFlex="50" fxLayout="row wrap" fxLayoutAlign="start center">
+                <span fxFlex="30" class="f-a r9">
+                </span>
+                <span fxFlex="70" class="f-a r9">
+                  {{data.unit}}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+      </div>
+    </div>
+
+    <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="center center" style="margin-top: 2rem; margin-bottom: 3rem;">
+      <button [disabled]="checkPrint()" mat-button color="primary" (click)="onClickPrint()">
+        <div fxLayout="row wrap" fxLayoutAlign="center center">
+          <img src="./assets/icons/pdf.png" alt="" style="width: 25px; height: 25px;">
+          <span>
+            Print
+          </span>
+        </div>
+      </button>
+      <button [disabled]="checkPrint()" mat-button color="primary" (click)="onSubmit()">
+        <div fxLayout="row wrap" fxLayoutAlign="center center">
+          ✅
+          <span>
+            Submit
+          </span>
+        </div>
+      </button>
+    </div>
+
+
+  </div>
+</div>

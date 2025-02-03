@@ -85,6 +85,16 @@ export class AppComponent {
 
         },
         {
+          title: 'Create SAP',
+          icon: 'warranty.png',
+          path: 'sap/create-pe',
+          items: [],
+          role: [],
+          department: [],
+
+
+        },
+        {
           title: 'Print',
           icon: 'printer.png',
           path: 'user/print',

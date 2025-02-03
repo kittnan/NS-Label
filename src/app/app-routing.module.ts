@@ -8,6 +8,7 @@ import { NotfoundComponent } from './pages/notfound/notfound.component';
 import { adminGuard } from './guards/admin.guard';
 import { userGuard } from './guards/user.guard';
 import { SelectDepartmentComponent } from './pages/select-department/select-department.component';
+import { SapModule } from './pages/sap/sap.module';
 
 const routes: Routes = [
   {
@@ -32,11 +33,15 @@ const routes: Routes = [
     path: 'user',
     loadChildren: () => UserModule,
     canActivate: [userGuard],
-
   },
   {
     path: 'guest',
     loadChildren: () => GuestModule,
+    canActivate: [],
+  },
+  {
+    path: 'sap',
+    loadChildren: () => SapModule,
     canActivate: [],
   },
   { path: '**', component: NotfoundComponent }
