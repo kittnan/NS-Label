@@ -95,8 +95,10 @@ export class CreateLabelComponent {
       ).subscribe(() => {
         this.shippingInputControl.setValue('');
       });
-      let { pkta117, models } = await this.getInitialData()
-      this.pkta117Main = pkta117
+      
+      // let { pkta117, models } = await this.getInitialData()
+      // this.pkta117Main = pkta117
+      this.getInitialData()
     } catch (error) {
       console.log("🚀 ~ error:", error)
     }
@@ -106,6 +108,7 @@ export class CreateLabelComponent {
     const pkta117 = resDataPKTA117
     const resDataModel = await lastValueFrom(this.$model.get(new HttpParams()))
     const models = resDataModel
+    this.model = models
     return { pkta117, models }
   }
 
@@ -130,10 +133,10 @@ export class CreateLabelComponent {
       let shipmentTextSp: any = text.split(',')
       const seident = shipmentTextSp[shipmentTextSp.length - 1]
 
-      let { pkta117, models } = await this.getInitialData()
+      // let { pkta117, models } = await this.getInitialData()
 
-      if (!pkta117.some((item: any) => item['Customer SO#'] == seident)) throw 'not found SEIDENT In PKTA117, please upload again!!!!!'
-      console.log(shipmentTextSp);
+      // if (!pkta117.some((item: any) => item['Customer SO#'] == seident)) throw 'not found SEIDENT In PKTA117, please upload again!!!!!'
+      // console.log(shipmentTextSp);
 
       // TODO MIX LOT
       if (text.toLocaleLowerCase().includes('mix lot')) {
@@ -250,14 +253,19 @@ export class CreateLabelComponent {
         qty: Number(spText[4]),
         org: text
       }
+
+      console.log(`⚡ ~ :257 ~ CreateLabelComponent ~ resultScan:`, resultScan);
+
       if (this.shipment?.lot.toString().toLowerCase() != 'mix lot' && this.shipment?.lot.length > 0 && !this.shipment?.org.includes(resultScan.lot)) throw 'no lot in shipping'
       for (const key in resultScan) {
         if (!resultScan[key]) throw `${key} = no data`
       }
 
-      let { pkta117, models } = await this.getInitialData()
+      // let { pkta117, models } = await this.getInitialData()
+      let model = this.checkResultWithInterModel(resultScan.internalCode, this.model)
 
-      let model = this.checkResultWithInterModel(resultScan.internalCode, models)
+      console.log(`⚡ ~ :264 ~ CreateLabelComponent ~ model:`, model);
+
       if (model) {
         this.form.PO = model.po
         this.shipment.PO = model.po

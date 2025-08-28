@@ -18,7 +18,7 @@ interface SideItem {
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  title = 'NS Slope Shipment Label';
+  title = 'NS Shipment Label';
   theme = false;
 
   mobileQuery!: MediaQueryList;
