@@ -126,7 +126,6 @@ export class CreateLabelComponent {
       let { pkta117, models } = await this.getInitialData()
 
       if (!pkta117.some((item: any) => item['Customer SO#'] == seident)) throw 'not found SEIDENT In PKTA117, please upload again!!!!!'
-      console.log(shipmentTextSp);
 
       // TODO MIX LOT
       if (text.toLocaleLowerCase().includes('mix lot')) {
