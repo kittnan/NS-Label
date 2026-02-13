@@ -11,13 +11,15 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from 'src/app/material/material.module';
 import { SharedModule } from 'src/app/shared/shared.module';
 import { UsersManageComponent } from './users-manage/users-manage.component';
+import { ModelUploadComponent } from './model/model-upload/model-upload.component';
 
 
 @NgModule({
   declarations: [
     AdminComponent,
     ModelComponent,
-    UsersManageComponent
+    UsersManageComponent,
+    ModelUploadComponent
   ],
   imports: [
     CommonModule,

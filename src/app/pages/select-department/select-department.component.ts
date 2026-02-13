@@ -35,7 +35,7 @@ export class SelectDepartmentComponent {
     if (role == 'admin') {
       this.router.navigate(['admin']).then(() => location.reload())
     } else if (role == 'user') {
-      if (department == 'PE') {
+      if (department == 'PC-PW') {
         this.router.navigate(['user/create-pe']).then(() => location.reload())
       }
       if (department == 'FGWH') {

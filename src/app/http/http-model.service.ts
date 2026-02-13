@@ -24,5 +24,11 @@ export class HttpModelService {
   update(data: any): Observable<any> {
     return this.http.put(`${this.URL}/${this.SUB}/update`, data);
   }
+  getModelInLT(data: any): Observable<any> {
+    return this.http.post(`${this.URL}/${this.SUB}/getModelInLT`, data);
+  }
+  createCompare(data: any): Observable<any> {
+    return this.http.post(`${this.URL}/${this.SUB}/createCompare`, data);
+  }
 
 }

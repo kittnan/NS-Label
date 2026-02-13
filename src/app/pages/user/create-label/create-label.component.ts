@@ -57,7 +57,7 @@ export class CreateLabelComponent {
     lotNo: null,
     lotShow: [],
     boxNo: null,
-
+    seiden: null
   }
   // pkta117: any = null
   // models: any = null
@@ -95,13 +95,18 @@ export class CreateLabelComponent {
       ).subscribe(() => {
         this.shippingInputControl.setValue('');
       });
-      
+
       // let { pkta117, models } = await this.getInitialData()
       // this.pkta117Main = pkta117
       this.getInitialData()
     } catch (error) {
       console.log("🚀 ~ error:", error)
     }
+  }
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      this.jumpToSendingScan('shipping-scan')
+    }, 1500);
   }
   async getInitialData() {
     const resDataPKTA117 = await lastValueFrom(this.$pkta117.get(new HttpParams()))
@@ -132,7 +137,8 @@ export class CreateLabelComponent {
     try {
       let shipmentTextSp: any = text.split(',')
       const seident = shipmentTextSp[shipmentTextSp.length - 1]
-
+      if (!seident) throw 'no SEIDENT in shipping data'
+      this.form.seiden = seident
       // let { pkta117, models } = await this.getInitialData()
 
       // if (!pkta117.some((item: any) => item['Customer SO#'] == seident)) throw 'not found SEIDENT In PKTA117, please upload again!!!!!'
@@ -262,16 +268,13 @@ export class CreateLabelComponent {
       }
 
       // let { pkta117, models } = await this.getInitialData()
-      let model = this.checkResultWithInterModel(resultScan.internalCode, this.model)
+      let model = this.checkResultWithInterModel(resultScan.internalCode, this.model, this.form.seiden)
+      if (!model) throw 'not found model in internal model with seiden'
 
-      console.log(`⚡ ~ :264 ~ CreateLabelComponent ~ model:`, model);
-
-      if (model) {
-        this.form.PO = model.po
-        this.shipment.PO = model.po
-        const resultScanObj = await this.genQrCode(resultScan, model)
-        this.sendingResultItems.push(resultScanObj)
-      }
+      this.form.PO = model.po
+      this.shipment.PO = model.po
+      const resultScanObj = await this.genQrCode(resultScan, model)
+      this.sendingResultItems.push(resultScanObj)
 
 
       let sum = this.sendingResultItems.reduce((p: any, n: any) => p += n.qty, 0)
@@ -329,8 +332,8 @@ export class CreateLabelComponent {
     return 'not have pkta117'
   }
 
-  checkResultWithInterModel(result: any, models: any) {
-    return models.find((item: any) => item.internalModel == result)
+  checkResultWithInterModel(result: any, models: any, seiden: string) {
+    return models.find((item: any) => item.internalModel == result && item.seiden == seiden)
   }
 
 
@@ -384,7 +387,7 @@ export class CreateLabelComponent {
     const barcode4 = await this.$qrCodeAndBarcode.genBarcode4(valueBarcode4)
     console.log(this.shipment.shipDate);
 
-    const date = moment(this.shipment.shipDate,'DD/MM/YY').format('DDMMYY')
+    const date = moment(this.shipment.shipDate, 'DD/MM/YY').format('DDMMYY')
 
     let valueQrCode = `<[!3S${this.form.PO}!P${valueBarcode2}!Q${valueBarcode3}!1T${valueBarcode4}!D${date}!S${moment().format('YYYY')}0${resultScan.box}!`
     const qrCode = await QRCode.toDataURL(valueQrCode)
@@ -432,7 +435,7 @@ export class CreateLabelComponent {
     return true
   }
 
-  async onSubmit(){
+  async onSubmit() {
     const { runNo } = await lastValueFrom(this.$form.runNo())
     this.shipment.runNo = runNo
     const sendingUpdate = this.sendingResultItems.map((item: any) => {
@@ -442,11 +445,11 @@ export class CreateLabelComponent {
     await lastValueFrom(this.$form.create(this.shipment))
     await lastValueFrom(this.$sending.create(sendingUpdate))
     Swal.fire({
-      title:'OK',
-      icon:'success',
-      showConfirmButton:false,
-      timer:1500
-    }).then(()=>{
+      title: 'OK',
+      icon: 'success',
+      showConfirmButton: false,
+      timer: 1000
+    }).then(() => {
       location.reload()
     })
   }

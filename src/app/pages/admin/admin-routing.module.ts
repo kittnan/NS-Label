@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { ModelComponent } from './model/model.component';
 import { UsersManageComponent } from './users-manage/users-manage.component';
+import { ModelUploadComponent } from './model/model-upload/model-upload.component';
 
 const routes: Routes = [
   {
@@ -12,6 +13,10 @@ const routes: Routes = [
   {
     path: 'model',
     component: ModelComponent,
+  },
+  {
+    path: 'model-upload',
+    component: ModelUploadComponent,
   },
   {
     path: 'user-manage',

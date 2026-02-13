@@ -32,7 +32,7 @@ export interface MODEL {
 export class ModelComponent {
 
   // todo table
-  displayedColumns: string[] = ['internalModel', 'partName', 'type', 'remark1', 'remark2', 'remark3', 'modelName','po'];
+  displayedColumns: string[] = ['internalModel', 'partName', 'type', 'remark1', 'remark2', 'remark3', 'modelName','po','seiden'];
   dataSource!: MatTableDataSource<any>
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;

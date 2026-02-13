@@ -17,7 +17,7 @@ const routes: Routes = [
   },
   {
     path: 'create-fgwh',
-    component: CreateLabelFgwhComponent,
+    component: CreateLabelComponent,
   },
   {
     path: 'print',

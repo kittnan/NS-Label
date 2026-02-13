@@ -71,7 +71,7 @@ export class AppComponent {
       icon: 'price-tag.png',
       path: '',
       role: ['admin', 'user'],
-      department: ['PE'],
+      department: ['PC-PW'],
 
       items: [
         {
