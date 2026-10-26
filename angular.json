@@ -54,7 +54,7 @@
                 }
               ],
               "outputHashing": "all",
-              "baseHref": "/ns-label/"
+              "baseHref": "/"
             },
             "development": {
               "buildOptimizer": false,
